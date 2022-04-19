@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "cat-merge"
+version = "0.1.0"
+description = ""
+authors = [
+    "Monarch Initiative <info@monarchinitiative.org>",
+    "Glass Elsarboukh <glass@tislab.org>",
+    "Tim Putman <tim@tislab.org>",
+    "Kevin Schaper <kevin@tislab.org>",
+    "Victoria Soesanto <victoria@tislab.org",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pandas = "^1.4.2"
+typer = "^0.4.1"
+mkdocs = "^1.3.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[tool.poetry.scripts]
+cat-merge = 'cat_merge.cli:merge'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

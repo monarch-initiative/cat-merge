@@ -2,7 +2,7 @@ from pandas.core.frame import DataFrame
 import os
 import tarfile
 from typing import List
-from cat_merge.model.merged_kg import MergedKG
+from model.merged_kg import MergedKG
 
 
 def write_df(df: DataFrame, filename: str):

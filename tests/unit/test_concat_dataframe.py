@@ -22,14 +22,15 @@ def dataframes() -> Tuple[DataFrame, DataFrame]:
     return string_df(A), string_df(B)
 
 
-def test_shape(dataframes):
+def test_length(dataframes):
     df = concat_dataframes(list(dataframes))
-    assert(df.shape == (4, 5))
+    assert(len(df) == 4)
 
 
 def test_columns(dataframes):
     df = concat_dataframes(list(dataframes))
-    assert(list(df.columns) == ['id', 'category', 'name', 'xrefs', 'synonyms'])
+    assert(df.index.name == 'id')
+    assert(list(df.columns) == ['category', 'name', 'xrefs', 'synonyms'])
 
 
 @pytest.fixture
@@ -49,9 +50,11 @@ def one_empty_dataframe() -> Tuple[DataFrame, DataFrame]:
 
 def test_empty_df(one_empty_dataframe):
     df = concat_dataframes(list(one_empty_dataframe))
-    assert(df.shape == (2, 3))
+    assert(len(df) == 2)
 
 
 def test_null_dataframe(dataframes):
     df = concat_dataframes([dataframes[0], None])
-    assert(df.shape == (4, 2))
+    assert(len(df) == 2)
+    assert(df.index.name == 'id')
+    assert(list(df.columns) == ['category', 'name', 'xrefs'])

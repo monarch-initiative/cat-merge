@@ -3,6 +3,18 @@ import os
 import tarfile
 from typing import List
 from model.merged_kg import MergedKG
+import pandas as pd
+
+
+def read_dfs(files: List[str], add_provided_by: bool = True) -> List[DataFrame]:
+    dataframes = []
+    for file in files:
+        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", index_col='id')
+        df.index.name = 'id'
+        if add_provided_by:
+            df["provided_by"] = os.path.basename(file)
+        dataframes.append(df)
+    return dataframes
 
 
 def write_df(df: DataFrame, filename: str):
@@ -20,6 +32,7 @@ def write_tar(tar_path: str, files: List[str], delete_files=True):
 
 
 def write(kg: MergedKG, name: str, output_dir: str):
+
     os.makedirs(output_dir, exist_ok=True)
 
     duplicate_nodes_path = f"{output_dir}/{name}-duplicate-nodes.tsv.gz"

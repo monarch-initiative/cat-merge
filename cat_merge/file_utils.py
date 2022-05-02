@@ -11,9 +11,9 @@ def get_files(filepath: str):
     print(filepath)
     for file in os.listdir(filepath):
         if file.endswith('nodes.tsv'):
-            node_files.append(file)
+            node_files.append(f"{filepath}/{file}")
         elif file.endswith('edges.tsv'):
-            edge_files.append(file)
+            edge_files.append(f"{filepath}/{file}")
     return node_files, edge_files
 
 def read_dfs(files: List[str], add_provided_by: bool = True) -> List[pd.DataFrame]:

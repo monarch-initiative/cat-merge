@@ -22,7 +22,7 @@ jobs:
 
             - name: Build
               run: |
-	              poetry build
+                   poetry build
 
             - name: Publish to PyPi
               env:

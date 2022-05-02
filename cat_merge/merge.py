@@ -2,10 +2,6 @@ from typing import List
 from cat_merge.file_utils import *
 from cat_merge.merge_utils import *
 
-import typer
-typer_app = typer.Typer()
-
-#@typer_app.command()
 def merge(
     name: str = "merged-kg",#typer.Option("merged-kg", help="Name of the resulting knowledge graph"),
     input_dir: str = None,#typer.Option(None, help="Optional directory containing node and edge files"),
@@ -29,8 +25,3 @@ def merge(
         kg=merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs),
         output_dir=output_dir
     )
-
-
-if __name__ == "__main__":
-    #typer.run(merge)
-    typer_app()

@@ -26,7 +26,7 @@ jobs:
 
             - name: Publish to PyPi
               env:
-                  PYPI_USERNAME: @token
+                  PYPI_USERNAME: "@token"
                   PYPI_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
               run: |
                   poetry publish

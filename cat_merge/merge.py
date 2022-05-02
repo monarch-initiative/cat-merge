@@ -10,7 +10,7 @@ def merge(
     output_dir: str = "merged-output",#typer.Option("merge-output", help="Directory to output knowledge graph")
     ):
 
-    print(f"Name: {name} // input_dir: {input_dir} // nodes: {nodes} // edges: {edges} // output_dir: {output_dir}")
+    print(f"Merging KG files...\nName: {name} // input_dir: {input_dir} // nodes: {nodes} // edges: {edges} // output_dir: {output_dir}")
 
     if nodes is not None and edges is not None:
         node_dfs = read_dfs(nodes)

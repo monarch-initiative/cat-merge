@@ -1,12 +1,22 @@
-from pandas.core.frame import DataFrame
-import os
-import tarfile
-from typing import List
-from model.merged_kg import MergedKG
+import os, tarfile
+from pathlib import Path
 import pandas as pd
+from typing import List, Tuple
 
+from cat_merge.model.merged_kg import MergedKG
 
-def read_dfs(files: List[str], add_provided_by: bool = True) -> List[DataFrame]:
+def get_files(filepath: str):
+    node_files = []
+    edge_files = []
+    print(filepath)
+    for file in os.listdir(filepath):
+        if file.endswith('nodes.tsv'):
+            node_files.append(f"{filepath}/{file}")
+        elif file.endswith('edges.tsv'):
+            edge_files.append(f"{filepath}/{file}")
+    return node_files, edge_files
+
+def read_dfs(files: List[str], add_provided_by: bool = True) -> List[pd.DataFrame]:
     dataframes = []
     for file in files:
         df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", index_col='id')
@@ -16,15 +26,14 @@ def read_dfs(files: List[str], add_provided_by: bool = True) -> List[DataFrame]:
         dataframes.append(df)
     return dataframes
 
-
-def write_df(df: DataFrame, filename: str):
+def write_df(df: pd.DataFrame, filename: str):
     df.to_csv(filename, sep="\t")
 
 
 def write_tar(tar_path: str, files: List[str], delete_files=True):
     tar = tarfile.open(tar_path, "w:gz")
     for file in files:
-        tar.add(file)
+        tar.add(file, arcname=os.path.basename(file))
     tar.close()
     if delete_files:
         for file in files:
@@ -35,8 +44,8 @@ def write(kg: MergedKG, name: str, output_dir: str):
 
     os.makedirs(output_dir, exist_ok=True)
 
-    duplicate_nodes_path = f"{output_dir}/{name}-duplicate-nodes.tsv.gz"
-    dangling_edges_path = f"{output_dir}/{name}-dangling-edges.tsv.gz"
+    duplicate_nodes_path = f"{output_dir}/qc/{name}-duplicate-nodes.tsv.gz"
+    dangling_edges_path = f"{output_dir}/qc/{name}-dangling-edges.tsv.gz"
     nodes_path = f"{output_dir}/{name}_nodes.tsv"
     edges_path = f"{output_dir}/{name}_edges.tsv"
     tar_path = f"{output_dir}/{name}.tar.gz"
@@ -47,6 +56,3 @@ def write(kg: MergedKG, name: str, output_dir: str):
     write_df(df=kg.edges, filename=edges_path)
 
     write_tar(tar_path, [nodes_path, edges_path])
-
-
-

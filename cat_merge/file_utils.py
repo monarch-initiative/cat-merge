@@ -42,7 +42,7 @@ def write_tar(tar_path: str, files: List[str], delete_files=True):
 
 def write(kg: MergedKG, name: str, output_dir: str):
 
-    os.makedirs(output_dir, exist_ok=True)
+    Path(f"{output_dir}/qc").mkdir(exist_ok=True, parents=True)
 
     duplicate_nodes_path = f"{output_dir}/qc/{name}-duplicate-nodes.tsv.gz"
     dangling_edges_path = f"{output_dir}/qc/{name}-dangling-edges.tsv.gz"

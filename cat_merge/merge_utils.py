@@ -1,7 +1,6 @@
 import pandas as pd
 from pandas.core.frame import DataFrame
 from typing import List
-import os
 from cat_merge.model.merged_kg import MergedKG
 
 

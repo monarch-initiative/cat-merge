@@ -1,3 +1,4 @@
+import csv
 import os, tarfile
 from pathlib import Path
 import pandas as pd
@@ -19,7 +20,7 @@ def get_files(filepath: str):
 def read_dfs(files: List[str], add_provided_by: bool = True) -> List[pd.DataFrame]:
     dataframes = []
     for file in files:
-        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", index_col='id')
+        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", index_col='id', quoting=csv.QUOTE_NONE)
         df.index.name = 'id'
         if add_provided_by:
             df["provided_by"] = os.path.basename(file)

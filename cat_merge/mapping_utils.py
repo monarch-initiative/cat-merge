@@ -3,5 +3,8 @@ from pandas.core.frame import DataFrame
 from typing import List
 
 
-def apply_mappings(edges: DataFrame):
-    pass
+def apply_mappings(edges: DataFrame, mapping: DataFrame):
+
+    # todo: apply mappings
+
+    return edges

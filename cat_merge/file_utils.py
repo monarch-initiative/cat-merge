@@ -1,3 +1,4 @@
+import csv
 import os, tarfile
 from pathlib import Path
 import pandas as pd
@@ -28,10 +29,10 @@ def read_dfs(files: List[str], add_provided_by: bool = True) -> List[pd.DataFram
 def read_df(file: str, add_provided_by: bool = True, index_column_is_id: bool = True):
 
     if index_column_is_id:
-        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", index_col='id')
+        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", index_col='id', quoting=csv.QUOTE_NONE)
         df.index.name = 'id'
     else:
-        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n")
+        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE)
 
     if add_provided_by:
         df["provided_by"] = os.path.basename(file)

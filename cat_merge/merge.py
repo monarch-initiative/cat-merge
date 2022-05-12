@@ -8,7 +8,8 @@ def merge(
     edges: List[str] = None,#typer.Option(None, help="Optional list of edge files"),
     nodes: List[str] = None,#typer.Option(None, help="Optional list of node files"),
     mapping: str = None,#typer.Option(None, help="Optional SSSOM mapping file")
-    output_dir: str = "merged-output",#typer.Option("merge-output", help="Directory to output knowledge graph")
+    output_dir: str = "merged-output",#typer.Option("merged-output", help="Directory to output knowledge graph")
+    merge_delimiter: str = "|",#typer.Option("|", help="Delimiter to use when merging categories and properties on duplicates")
     ):
 
     print(f"Merging KG files...\nName: {name} // input_dir: {input_dir} // nodes: {nodes} // edges: {edges} // output_dir: {output_dir}")
@@ -27,6 +28,6 @@ def merge(
 
     write(
         name=name,
-        kg=merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping=mapping_df),
+        kg=merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping=mapping_df, merge_delimiter=merge_delimiter),
         output_dir=output_dir
     )

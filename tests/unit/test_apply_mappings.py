@@ -15,7 +15,7 @@ def edges():
 
 
 @pytest.fixture
-def mapping():  # owl:sameAs
+def mapping():
     mapping = u"""\
     subject_id  object_id
     XGene:1     Gene:1
@@ -41,6 +41,6 @@ def test_apply_mappings(edges, mapping):
 def test_original_subject_and_object(edges, mapping):
     mapped_edges = apply_mappings(edges, mapping)
 
-    assert mapped_edges.loc['uuid:3']['original_subject'] == 'XGene:2'
+    assert mapped_edges.loc['uuid:2']['original_subject'] == 'XGene:2'
     assert mapped_edges.loc['uuid:3']['original_object'] == 'XDisease:3'
     assert mapped_edges.loc['uuid:4']['original_object'] == 'XDisease:4'

@@ -13,7 +13,7 @@ def get_duplicate_rows(df: DataFrame) -> DataFrame:
     return df[df.index.duplicated(keep=False)]
 
 
-def clean_nodes(nodes: DataFrame, merge_delimiter: str) -> DataFrame:
+def clean_nodes(nodes: DataFrame, merge_delimiter: str = " ") -> DataFrame:
     nodes.reset_index(inplace=True)
     nodes.drop_duplicates(inplace=True)
     nodes = nodes.rename(columns={'index': 'id'})
@@ -31,7 +31,7 @@ def get_dangling_edges(edges: DataFrame, nodes: DataFrame) -> DataFrame:
     return edges[~edges.subject.isin(nodes.index) | ~edges.object.isin(nodes.index)]
 
 
-def merge_kg(edge_dfs: List[DataFrame], node_dfs: List[DataFrame], merge_delimiter: str) -> MergedKG:
+def merge_kg(edge_dfs: List[DataFrame], node_dfs: List[DataFrame], merge_delimiter: str = " ") -> MergedKG:
 
     all_nodes = concat_dataframes(node_dfs)
     all_edges = concat_dataframes(edge_dfs)

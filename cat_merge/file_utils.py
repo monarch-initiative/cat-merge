@@ -5,6 +5,7 @@ from typing import List, Tuple
 
 from cat_merge.model.merged_kg import MergedKG
 
+
 def get_files(filepath: str):
     node_files = []
     edge_files = []
@@ -16,15 +17,26 @@ def get_files(filepath: str):
             edge_files.append(f"{filepath}/{file}")
     return node_files, edge_files
 
+
 def read_dfs(files: List[str], add_provided_by: bool = True) -> List[pd.DataFrame]:
     dataframes = []
     for file in files:
+        dataframes.append(read_df(file, add_provided_by=add_provided_by))
+    return dataframes
+
+
+def read_df(file: str, add_provided_by: bool = True, index_column_is_id: bool = True):
+
+    if index_column_is_id:
         df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", index_col='id')
         df.index.name = 'id'
-        if add_provided_by:
-            df["provided_by"] = os.path.basename(file)
-        dataframes.append(df)
-    return dataframes
+    else:
+        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n")
+
+    if add_provided_by:
+        df["provided_by"] = os.path.basename(file)
+    return df
+
 
 def write_df(df: pd.DataFrame, filename: str):
     df.to_csv(filename, sep="\t")

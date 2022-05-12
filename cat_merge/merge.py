@@ -8,7 +8,7 @@ def merge(
     edges: List[str] = None,#typer.Option(None, help="Optional list of edge files"),
     nodes: List[str] = None,#typer.Option(None, help="Optional list of node files"),
     output_dir: str = "merged-output",#typer.Option("merged-output", help="Directory to output knowledge graph")
-    merge_delimiter: str = " ",#typer.Option(" ", help="Delimiter to use when merging categories and properties on duplicates")
+    merge_delimiter: str = "|",#typer.Option("|", help="Delimiter to use when merging categories and properties on duplicates")
     ):
 
     print(f"Merging KG files...\nName: {name} // input_dir: {input_dir} // nodes: {nodes} // edges: {edges} // output_dir: {output_dir}")

@@ -10,7 +10,6 @@ from cat_merge.model.merged_kg import MergedKG
 def get_files(filepath: str):
     node_files = []
     edge_files = []
-    print(filepath)
     for file in os.listdir(filepath):
         if file.endswith('nodes.tsv'):
             node_files.append(f"{filepath}/{file}")

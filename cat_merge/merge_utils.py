@@ -16,7 +16,6 @@ def clean_nodes(nodes: DataFrame, merge_delimiter: str = " ") -> DataFrame:
     nodes.reset_index(inplace=True)
     nodes.drop_duplicates(inplace=True)
     nodes = nodes.rename(columns={'index': 'id'})
-    nodes.fillna("None", inplace=True)
     column_agg = {x: merge_delimiter.join for x in nodes.columns if x != 'id'}
     nodes = nodes.groupby(['id'], as_index=True).agg(column_agg)
     return nodes
@@ -27,12 +26,15 @@ def clean_edges(edges: DataFrame, nodes: DataFrame) -> DataFrame:
 
 
 def get_dangling_edges(edges: DataFrame, nodes: DataFrame) -> DataFrame:
-    return edges[~edges.subject.isin(nodes.index) | ~edges.object.isin(nodes.index)]
+    dangling_edges = edges[~edges.subject.isin(nodes.index) | ~edges.object.isin(nodes.index)]
+    return dangling_edges
 
 
 def merge_kg(edge_dfs: List[DataFrame], node_dfs: List[DataFrame], mapping: DataFrame = None, merge_delimiter: str = "|") -> MergedKG:
     all_nodes = concat_dataframes(node_dfs)
+    all_nodes.fillna("None", inplace=True)
     all_edges = concat_dataframes(edge_dfs)
+    all_edges.fillna("None", inplace=True)
 
     if mapping is not None:
         all_edges = apply_mappings(all_edges, mapping)

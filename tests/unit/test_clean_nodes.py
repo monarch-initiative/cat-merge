@@ -20,11 +20,13 @@ def nodes() -> Tuple[DataFrame, DataFrame]:
     Disease:4  Disease
     """
 
-    return string_df(nodes)
+    # Expects fillna to have happened upstream
+    return string_df(nodes).fillna("None")
 
 
 def test_clean_nodes(nodes):
-    cleaned_nodes = clean_nodes(nodes)
+    # Expects fillna("None")
+    cleaned_nodes = clean_nodes(nodes.fillna("None"))
 
     assert(len(cleaned_nodes) == 7)
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cat-merge"
-version = "0.1.9"
+version = "0.1.10"
 description = ""
 authors = [
     "Monarch Initiative <info@monarchinitiative.org>",

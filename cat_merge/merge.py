@@ -9,15 +9,19 @@ from cat_merge.qc_utils import create_qc_report
 log = logging.getLogger(__name__)
 
 
+# Using typer options causes a TyperOption to be passed in place of the default,
+# details: https://github.com/tiangolo/typer/issues/106
+# We could make a second function to wrap defaults?
+
 def merge(
-    name: str = typer.Option("merged-kg", help="Name of the resulting knowledge graph"),
-    input_dir: str = typer.Option(None, help="Optional directory containing node and edge files"),
-    edges: List[str] = typer.Option(None, help="Optional list of edge files"),
-    nodes: List[str] = typer.Option(None, help="Optional list of node files"),
-    mapping: str = typer.Option(None, help="Optional SSSOM mapping file"),
-    output_dir: str = typer.Option("merged-output", help="Directory to output knowledge graph"),
-    merge_delimiter: str = typer.Option("|", help="Delimiter to use when merging categories and properties on duplicates")
-    ):
+        name: str = "merged-kg",
+        input_dir: str = None,  # Optional directory containing node and edge files
+        edges: List[str] = None,  # Optional list of edge files
+        nodes: List[str] = None,  # Optional list of node files
+        mapping: str = None,  # Optional SSSOM mapping file
+        output_dir: str = "merged-output",  # Directory to output knowledge graph
+        merge_delimiter: str = "|"  # Delimiter to use when merging categories and properties on duplicates
+):
 
     print(f"""\
 Merging KG files...
@@ -25,11 +29,13 @@ Merging KG files...
   input_dir: {input_dir} 
   nodes: {nodes}
   edges: {edges} 
+  mapping: {mapping}
   output_dir: {output_dir}
 """)
 
     print("Reading node and edge files")
-    if isinstance(nodes, List) and len(nodes) > 0 and isinstance(edges, List) and len(edges) > 0:
+    if nodes is not None and len(nodes) > 0 \
+            and edges is not None and len(edges) > 0:
         node_dfs = read_dfs(nodes)
         edge_dfs = read_dfs(edges)
     elif input_dir is not None:
@@ -39,7 +45,7 @@ Merging KG files...
 
     mapping_df = None
     if mapping is not None:
-        mapping_df = read_df()
+        mapping_df = read_df(mapping)
 
     print("Merging...")
     kg = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping=mapping_df, merge_delimiter=merge_delimiter)

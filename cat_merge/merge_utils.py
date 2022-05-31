@@ -9,24 +9,23 @@ def concat_dataframes(dataframes: List[DataFrame]) -> DataFrame:
 
 
 def get_duplicate_rows(df: DataFrame) -> DataFrame:
-    return df[df.index.duplicated(keep=False)]
+    return df[df.id.duplicated(keep=False)]
 
 
 def clean_nodes(nodes: DataFrame, merge_delimiter: str = " ") -> DataFrame:
-    nodes.reset_index(inplace=True)
-    nodes.drop_duplicates(inplace=True)
-    nodes = nodes.rename(columns={'index': 'id'})
-    column_agg = {x: merge_delimiter.join for x in nodes.columns if x != 'id'}
-    nodes = nodes.groupby(['id'], as_index=True).agg(column_agg)
+    # TODO: id column isn't coming out of this
+    # nodes.drop_duplicates(inplace=True)
+    # column_agg = {x: merge_delimiter.join for x in nodes.columns if x != 'id'}
+    # nodes = nodes.groupby(['id']).agg(column_agg)
     return nodes
 
 
 def clean_edges(edges: DataFrame, nodes: DataFrame) -> DataFrame:
-    return edges[edges.subject.isin(nodes.index) & edges.object.isin(nodes.index)]
+    return edges[edges.subject.isin(nodes.id) & edges.object.isin(nodes.id)]
 
 
 def get_dangling_edges(edges: DataFrame, nodes: DataFrame) -> DataFrame:
-    dangling_edges = edges[~edges.subject.isin(nodes.index) | ~edges.object.isin(nodes.index)]
+    dangling_edges = edges[~edges.subject.isin(nodes.id) | ~edges.object.isin(nodes.id)]
     return dangling_edges
 
 

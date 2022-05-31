@@ -1,5 +1,5 @@
 import pytest
-from tests.test_utils import string_df
+from tests.test_utils import string_df, value
 from cat_merge.mapping_utils import apply_mappings
 
 @pytest.fixture
@@ -17,30 +17,37 @@ def edges():
 @pytest.fixture
 def mapping():
     mapping = u"""\
-    subject_id  object_id
-    XGene:1     Gene:1
-    XGene:2     Gene:2
-    XGene:3     Gene:3
-    XDisease:1  Disease:1
-    XDisease:2  Disease:2
-    XDisease:3  Disease:3
-    XDisease:4  Disease:4
+    subject_id  predicate       object_id
+    XGene:1     skos:exactMatch Gene:1
+    XGene:2     skos:exactMatch Gene:2
+    XGene:3     skos:exactMatch Gene:3
+    XDisease:1  skos:exactMatch Disease:1
+    XDisease:2  skos:exactMatch Disease:2
+    XDisease:3  skos:exactMatch Disease:3
+    XDisease:4  skos:exactMatch Disease:4
     """
-    return string_df(mapping, index_column_is_id=False)
+    return string_df(mapping)
 
 
 def test_apply_mappings(edges, mapping):
     mapped_edges = apply_mappings(edges, mapping)
-
-    assert mapped_edges.loc['uuid:3']['subject'] == 'Gene:2'
-    assert mapped_edges.loc['uuid:3']['object'] == 'Disease:3'
-    assert mapped_edges.loc['uuid:4']['subject'] == 'Gene:3'
-    assert mapped_edges.loc['uuid:4']['object'] == 'Disease:4'
+    assert value(mapped_edges, 'uuid:3', 'subject') == 'Gene:2'
+    assert value(mapped_edges, 'uuid:3', 'object') == 'Disease:3'
+    assert value(mapped_edges, 'uuid:4', 'subject') == 'Gene:3'
+    assert value(mapped_edges, 'uuid:4', 'object') == 'Disease:4'
 
 
 def test_original_subject_and_object(edges, mapping):
     mapped_edges = apply_mappings(edges, mapping)
 
-    assert mapped_edges.loc['uuid:2']['original_subject'] == 'XGene:2'
-    assert mapped_edges.loc['uuid:3']['original_object'] == 'XDisease:3'
-    assert mapped_edges.loc['uuid:4']['original_object'] == 'XDisease:4'
+    assert value(mapped_edges, 'uuid:2', 'original_subject') == 'XGene:2'
+    assert value(mapped_edges, 'uuid:3', 'original_object') == 'XDisease:3'
+    assert value(mapped_edges, 'uuid:4', 'original_object') == 'XDisease:4'
+
+def test_no_extra_columns(edges, mapping):
+    edge_columns = list(edges.columns)
+    mapped_edges = apply_mappings(edges, mapping)
+    mapped_edge_columns = set(mapped_edges.columns)
+    expected_columns = set(edge_columns + ["original_subject", "original_object"])
+    assert mapped_edge_columns == expected_columns
+

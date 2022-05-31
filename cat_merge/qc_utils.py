@@ -88,20 +88,7 @@ def create_qc_report(merged_kg: MergedKG) -> Dict:
     nodes['in_taxon'] = nodes['in_taxon'].fillna('missing taxon')
     nodes['category'] = nodes['category'].fillna('missing category')
 
-    # convert the index back into an id column for nodes
-    nodes.reset_index(inplace=True)
-    nodes = nodes.rename(columns={'index': 'id'})
-
     unique_id_from_nodes = nodes["id"]
-
-    # convert the index back into an id column for edges
-    edges.reset_index(inplace=True)
-    edges = edges.rename(columns={'index': 'id'})
-
-    # convert the index back into an id column for dangling_edges
-    dangling_edges.reset_index(inplace=True)
-    dangling_edges = dangling_edges.rename(columns={'index': 'id'})
-
 
     ingest_collection = {
         "edges": [],

@@ -13,10 +13,7 @@ def get_duplicate_rows(df: DataFrame) -> DataFrame:
 
 
 def clean_nodes(nodes: DataFrame, merge_delimiter: str = " ") -> DataFrame:
-    # TODO: id column isn't coming out of this
-    # nodes.drop_duplicates(inplace=True)
-    # column_agg = {x: merge_delimiter.join for x in nodes.columns if x != 'id'}
-    # nodes = nodes.groupby(['id']).agg(column_agg)
+    nodes.drop_duplicates(inplace=True)
     return nodes
 
 

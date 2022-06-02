@@ -20,5 +20,5 @@ def dataframe_with_duplicates() -> DataFrame:
 def test_get_duplicate_row(dataframe_with_duplicates):
     df = get_duplicate_rows(dataframe_with_duplicates)
     assert(len(df) == 2)
-    assert(list(df.index) == ["Gene:2", "Gene:2"])
+    assert(list(df.id) == ["Gene:2", "Gene:2"])
 

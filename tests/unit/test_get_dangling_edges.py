@@ -33,9 +33,11 @@ def test_get_dangling_edges(nodes_and_edges):
 
     assert(len(dangling_edges) == 3)
 
-    assert('uuid:1' not in dangling_edges.index)
-    assert('uuid:2' not in dangling_edges.index)
-    assert('uuid:3' in dangling_edges.index)
-    assert('uuid:4' in dangling_edges.index)
-    assert('uuid:5' in dangling_edges.index)
+    dangling_edge_ids = list(dangling_edges.id)
+
+    assert('uuid:1' not in dangling_edge_ids)
+    assert('uuid:2' not in dangling_edge_ids)
+    assert('uuid:3' in dangling_edge_ids)
+    assert('uuid:4' in dangling_edge_ids)
+    assert('uuid:5' in dangling_edge_ids)
 

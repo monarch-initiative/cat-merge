@@ -29,8 +29,7 @@ def test_length(dataframes):
 
 def test_columns(dataframes):
     df = concat_dataframes(list(dataframes))
-    assert(df.index.name == 'id')
-    assert(list(df.columns) == ['category', 'name', 'xrefs', 'synonyms'])
+    assert(list(df.columns) == ['id', 'category', 'name', 'xrefs', 'synonyms'])
 
 
 @pytest.fixture
@@ -56,5 +55,4 @@ def test_empty_df(one_empty_dataframe):
 def test_null_dataframe(dataframes):
     df = concat_dataframes([dataframes[0], None])
     assert(len(df) == 2)
-    assert(df.index.name == 'id')
-    assert(list(df.columns) == ['category', 'name', 'xrefs'])
+    assert(list(df.columns) == ['id', 'category', 'name', 'xrefs'])

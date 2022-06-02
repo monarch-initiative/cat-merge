@@ -45,7 +45,7 @@ Merging KG files...
 
     mapping_df = None
     if mapping is not None:
-        mapping_df = read_df(mapping, index_column_is_id=False)
+        mapping_df = read_df(mapping, add_provided_by=False)
 
     print("Merging...")
     kg = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping=mapping_df, merge_delimiter=merge_delimiter)

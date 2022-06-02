@@ -25,13 +25,8 @@ def read_dfs(files: List[str], add_provided_by: bool = True) -> List[pd.DataFram
     return dataframes
 
 
-def read_df(file: str, add_provided_by: bool = True, index_column_is_id: bool = True):
-
-    if index_column_is_id:
-        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", index_col='id', quoting=csv.QUOTE_NONE)
-        df.index.name = 'id'
-    else:
-        df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE)
+def read_df(file: str, add_provided_by: bool = True):
+    df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE)
 
     if add_provided_by:
         df["provided_by"] = os.path.basename(file)
@@ -39,7 +34,7 @@ def read_df(file: str, add_provided_by: bool = True, index_column_is_id: bool = 
 
 
 def write_df(df: pd.DataFrame, filename: str):
-    df.to_csv(filename, sep="\t")
+    df.to_csv(filename, sep="\t", index=False)
 
 
 def write_tar(tar_path: str, files: List[str], delete_files=True):

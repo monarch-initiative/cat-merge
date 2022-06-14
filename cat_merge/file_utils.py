@@ -26,7 +26,7 @@ def read_dfs(files: List[str], add_provided_by: bool = True) -> List[pd.DataFram
 
 
 def read_df(file: str, add_provided_by: bool = True):
-    df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE)
+    df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#')
 
     if add_provided_by:
         df["provided_by"] = os.path.basename(file)

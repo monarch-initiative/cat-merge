@@ -43,18 +43,22 @@ def create_edge_node_types_report(edges_provided_by_values, unique_id_from_nodes
     node_type_list = (list(set(edges_provided_by_values['subject']) & set(unique_id_from_nodes))) + (list(set(
         edges_provided_by_values['object']) & set(unique_id_from_nodes)))
     node_type_df = nodes[nodes['id'].isin(node_type_list)]
-    node_type_group = node_type_df.groupby(['provided_by'])[['id', 'category', 'in_taxon']]
+    node_grouping_fields = ['id', 'category']
+    if 'in_taxon' in nodes.column:
+        node_grouping_fields.append('in_taxon')
+    node_type_group = node_type_df.groupby(['provided_by'])[node_grouping_fields]
     for node_type_provided_by, node_type_provided_by_values in node_type_group:
         node_type_object = {
             "name": node_type_provided_by,
             "categories": list(set(node_type_provided_by_values['category'])),
-            "taxon": list(set(node_type_provided_by_values["in_taxon"])),
             "namespaces": list(set(list(set(node_type_provided_by_values['id'].str.split(':').str[0])))),
             "total_number": len(set(node_type_provided_by_values['id'].tolist())),
             # id that are in nodes file but are not in subject or object from edges file
             "missing": len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['subject'])))
                        + len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['object'])))
         }
+        if 'in_taxon' in nodes.column:
+            node_type_object["taxon"] = list(set(node_type_provided_by_values["in_taxon"]))
         node_types.append(node_type_object)
     return node_types
 
@@ -85,7 +89,8 @@ def create_qc_report(merged_kg: MergedKG) -> Dict:
     dangling_edges = merged_kg.dangling_edges
     nodes = merged_kg.nodes
 
-    nodes['in_taxon'] = nodes['in_taxon'].fillna('missing taxon')
+    if 'in_taxon' in nodes.columns:
+        nodes['in_taxon'] = nodes['in_taxon'].fillna('missing taxon')
     nodes['category'] = nodes['category'].fillna('missing category')
 
     unique_id_from_nodes = nodes["id"]
@@ -102,16 +107,20 @@ def create_qc_report(merged_kg: MergedKG) -> Dict:
 
 
     # Nodes
+    node_grouping_fields = ['id', 'category']
+    if 'in_taxon' in nodes.column:
+        node_grouping_fields.append('in_taxon')
 
-    nodes_group = nodes.groupby(['provided_by'])[['id', 'category', 'in_taxon']]
+    nodes_group = nodes.groupby(['provided_by'])[node_grouping_fields]
     for nodes_provided_by, nodes_provided_by_values in nodes_group:
         node_object = {
             "name": nodes_provided_by,
             "namespaces": list(set(list(set(nodes_provided_by_values['id'].str.split(':').str[0])))),
             "categories": list(set(nodes_provided_by_values['category'])),
             "total_number": len(set(nodes_provided_by_values['id'].tolist())),
-            "taxon": list(set(nodes_provided_by_values["in_taxon"]))
         }
+        if 'in_taxon' in nodes.columns:
+            node_object["taxon"] = list(set(nodes_provided_by_values["in_taxon"]))
         ingest_collection['nodes'].append(node_object)
 
     return ingest_collection

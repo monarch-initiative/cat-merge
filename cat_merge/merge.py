@@ -1,4 +1,3 @@
-import typer
 import yaml
 import logging
 
@@ -8,11 +7,6 @@ from cat_merge.qc_utils import create_qc_report
 
 log = logging.getLogger(__name__)
 
-
-# Using typer options causes a TyperOption to be passed in place of the default,
-# details: https://github.com/tiangolo/typer/issues/106
-# We could make a second function to wrap defaults?
-
 def merge(
         name: str = "merged-kg",
         input_dir: str = None,  # Optional directory containing node and edge files
@@ -20,7 +14,8 @@ def merge(
         nodes: List[str] = None,  # Optional list of node files
         mapping: str = None,  # Optional SSSOM mapping file
         output_dir: str = "merged-output",  # Directory to output knowledge graph
-        merge_delimiter: str = "|"  # Delimiter to use when merging categories and properties on duplicates
+        merge_delimiter: str = "|",  # Delimiter to use when merging categories and properties on duplicates
+        qc_report: bool = True
 ):
 
     print(f"""\
@@ -55,12 +50,11 @@ Merging KG files...
         output_dir=output_dir
     )
 
-    print("Generating QC report")
-    qc_report = create_qc_report(kg)
+    if qc_report:
+        print("Generating QC report")
+        qc_report = create_qc_report(kg)
 
-    with open(f"{output_dir}/qc_report.yaml", "w") as report_file:
-        yaml.dump(qc_report, report_file)
+        with open(f"{output_dir}/qc_report.yaml", "w") as report_file:
+            yaml.dump(qc_report, report_file)
 
 
-if __name__ == "__main__":
-    typer.run(merge)

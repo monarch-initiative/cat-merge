@@ -12,7 +12,7 @@ def merge(
         input_dir: str = None,  # Optional directory containing node and edge files
         edges: List[str] = None,  # Optional list of edge files
         nodes: List[str] = None,  # Optional list of node files
-        mapping: str = None,  # Optional SSSOM mapping file
+        mappings: List[str] = None,  # Optional list of SSSOM mapping files
         output_dir: str = "merged-output",  # Directory to output knowledge graph
         merge_delimiter: str = "|",  # Delimiter to use when merging categories and properties on duplicates
         qc_report: bool = True
@@ -24,7 +24,7 @@ Merging KG files...
   input_dir: {input_dir} 
   nodes: {nodes}
   edges: {edges} 
-  mapping: {mapping}
+  mappings: {mappings}
   output_dir: {output_dir}
 """)
 
@@ -38,12 +38,13 @@ Merging KG files...
         node_dfs = read_dfs(node_files)
         edge_dfs = read_dfs(edge_files)
 
-    mapping_df = None
-    if mapping is not None:
-        mapping_df = read_df(mapping, add_provided_by=False)
+    mapping_dfs = []
+    if mappings is not None:
+        for file in mappings:
+            mapping_dfs.append(read_df(file, add_provided_by=False))
 
     print("Merging...")
-    kg = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping=mapping_df, merge_delimiter=merge_delimiter)
+    kg = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping_dfs=mapping_dfs, merge_delimiter=merge_delimiter)
     write(
         name=name,
         kg=kg,

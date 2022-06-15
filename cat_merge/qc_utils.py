@@ -44,7 +44,7 @@ def create_edge_node_types_report(edges_provided_by_values, unique_id_from_nodes
         edges_provided_by_values['object']) & set(unique_id_from_nodes)))
     node_type_df = nodes[nodes['id'].isin(node_type_list)]
     node_grouping_fields = ['id', 'category']
-    if 'in_taxon' in nodes.column:
+    if 'in_taxon' in nodes.columns:
         node_grouping_fields.append('in_taxon')
     node_type_group = node_type_df.groupby(['provided_by'])[node_grouping_fields]
     for node_type_provided_by, node_type_provided_by_values in node_type_group:
@@ -57,7 +57,7 @@ def create_edge_node_types_report(edges_provided_by_values, unique_id_from_nodes
             "missing": len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['subject'])))
                        + len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['object'])))
         }
-        if 'in_taxon' in nodes.column:
+        if 'in_taxon' in nodes.columns:
             node_type_object["taxon"] = list(set(node_type_provided_by_values["in_taxon"]))
         node_types.append(node_type_object)
     return node_types
@@ -108,7 +108,7 @@ def create_qc_report(merged_kg: MergedKG) -> Dict:
 
     # Nodes
     node_grouping_fields = ['id', 'category']
-    if 'in_taxon' in nodes.column:
+    if 'in_taxon' in nodes.columns:
         node_grouping_fields.append('in_taxon')
 
     nodes_group = nodes.groupby(['provided_by'])[node_grouping_fields]

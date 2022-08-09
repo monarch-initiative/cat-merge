@@ -2,7 +2,7 @@ import csv
 import os, tarfile
 from pathlib import Path
 import pandas as pd
-from typing import List, Tuple
+from typing import List, Optional
 
 from cat_merge.model.merged_kg import MergedKG
 
@@ -45,6 +45,20 @@ def write_tar(tar_path: str, files: List[str], delete_files=True):
     if delete_files:
         for file in files:
             os.remove(file)
+
+def read_kg(archive_path: str,
+            dangling_edges_path: Optional[str],
+            nodes_file_name: Optional[str],
+            edges_file_name: Optional[str]) -> MergedKG:
+    if not os.path.exists(archive_path):
+        raise FileNotFoundError
+    if dangling_edges is not None and not os.path.exists(dangling_edges_path)
+        raise FileNotFoundError
+
+    # iterate over files in tar, pull _nodes and _edges
+
+    # read into pandas and return a MergedKG instance
+
 
 
 def write(kg: MergedKG, name: str, output_dir: str):

@@ -46,20 +46,52 @@ def write_tar(tar_path: str, files: List[str], delete_files=True):
         for file in files:
             os.remove(file)
 
+
+
+def read_tar_dfs(tar: tarfile.TarFile, add_provided_by: bool = True) -> List[pd.DataFrame]:
+    dataframes = []
+    for member in tar.getmembers():
+        info = tar.extractfile(member)
+        if info:
+            dataframes.append(read_tar_df(info, add_provided_by=add_provided_by))
+    return dataframes
+
+def read_tar_df(info: tarfile.TarInfo, add_provided_by: bool = True, provided_by: str = None):
+    df = pd.read_csv(info, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#')
+
+    if add_provided_by:
+        df["provided_by"] = provided_by
+    return df
+
+
+def read_tar_dfs_2(tar: tarfile.TarFile, add_provided_by: bool = True) -> List[pd.DataFrame]:
+    dataframes = []
+    for member in tar.getmembers():
+        f = tar.extractfile(member)
+        if f:
+            dataframes.append(read_tar_df(f, add_provided_by = add_provided_by, provided_by = member.name))
+                # pd.read_csv(f, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#'))
+    return dataframes
+
+
 def read_kg(archive_path: str,
-            dangling_edges_path: Optional[str],
-            nodes_file_name: Optional[str],
-            edges_file_name: Optional[str]) -> MergedKG:
+            add_provided_by: bool = True,
+            # dangling_edges: bool = True,
+            # dangling_edges_path: str = None,
+            nodes_file_name: str = None,
+            edges_file_name: str = None):
     if not os.path.exists(archive_path):
         raise FileNotFoundError
-    if dangling_edges is not None and not os.path.exists(dangling_edges_path)
-        raise FileNotFoundError
+    # if dangling_edges is not None and not os.path.exists(dangling_edges_path):
+    #     raise FileNotFoundError
 
     # iterate over files in tar, pull _nodes and _edges
+    tar = tarfile.open(archive_path, "r:*")
+    dataframes = read_tar_dfs_2(tar, add_provided_by=add_provided_by)
 
     # read into pandas and return a MergedKG instance
 
-
+    return dataframes
 
 def write(kg: MergedKG, name: str, output_dir: str):
 

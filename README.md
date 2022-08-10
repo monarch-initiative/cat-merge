@@ -5,6 +5,7 @@ Python library for merging individual source KGX files in the Monarch Initiative
 #### Dependencies
 
 - [Poetry](https://python-poetry.org/docs/)
+- [Pandas](https://pandas.pydata.org/)
 
 #### Usage
 

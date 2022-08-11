@@ -5,7 +5,7 @@ import pandas as pd
 from typing import List, Optional
 
 from cat_merge.model.merged_kg import MergedKG
-
+from cat_merge.merge_utils import merge_kg
 
 def get_files(filepath: str):
     node_files = []
@@ -47,31 +47,20 @@ def write_tar(tar_path: str, files: List[str], delete_files=True):
             os.remove(file)
 
 
-
-def read_tar_dfs(tar: tarfile.TarFile, add_provided_by: bool = True) -> List[pd.DataFrame]:
+def read_tar_dfs(tar: tarfile.TarFile, type_name, add_provided_by: bool = True) -> List[pd.DataFrame]:
     dataframes = []
     for member in tar.getmembers():
-        info = tar.extractfile(member)
-        if info:
-            dataframes.append(read_tar_df(info, add_provided_by=add_provided_by))
+        if member.isfile() and type_name in member.name:
+            dataframes.append(read_tar_df(tar.extractfile(member), provided_by = member.name))
     return dataframes
 
-def read_tar_df(info: tarfile.TarInfo, add_provided_by: bool = True, provided_by: str = None):
-    df = pd.read_csv(info, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#')
 
-    if add_provided_by:
+def read_tar_df(file: tarfile.TarInfo, provided_by: str = None, add_provided_by: bool = True) -> pd.DataFrame:
+    df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#')
+
+    if provided_by != None:
         df["provided_by"] = provided_by
     return df
-
-
-def read_tar_dfs_2(tar: tarfile.TarFile, add_provided_by: bool = True) -> List[pd.DataFrame]:
-    dataframes = []
-    for member in tar.getmembers():
-        f = tar.extractfile(member)
-        if f:
-            dataframes.append(read_tar_df(f, add_provided_by = add_provided_by, provided_by = member.name))
-                # pd.read_csv(f, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#'))
-    return dataframes
 
 
 def read_kg(archive_path: str,
@@ -87,11 +76,15 @@ def read_kg(archive_path: str,
 
     # iterate over files in tar, pull _nodes and _edges
     tar = tarfile.open(archive_path, "r:*")
-    dataframes = read_tar_dfs_2(tar, add_provided_by=add_provided_by)
+    nodes_name = nodes_file_name or "_nodes"
+    edges_name = edges_file_name or "_edges"
 
     # read into pandas and return a MergedKG instance
+    node_dfs = read_tar_dfs(tar, nodes_name, add_provided_by=add_provided_by)
+    edge_dfs = read_tar_dfs(tar, edges_name, add_provided_by=add_provided_by)
+    kg = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs) # requires import of merge_kg form kg_utils, ok?
 
-    return dataframes
+    return kg
 
 def write(kg: MergedKG, name: str, output_dir: str):
 

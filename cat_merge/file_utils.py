@@ -1,36 +1,56 @@
 import csv
-import os, tarfile
+import os
+import tarfile
 from pathlib import Path
 import pandas as pd
-from typing import List, Optional
+from typing import List, IO, Union, Optional
 
 from cat_merge.model.merged_kg import MergedKG
-from cat_merge.merge_utils import merge_kg
 
-def get_files(filepath: str):
+
+def get_files(filepath: str, nodes_match: str = "_nodes", edges_match: str = "_edges"):
     node_files = []
     edge_files = []
     for file in os.listdir(filepath):
-        if file.endswith('nodes.tsv'):
+        if nodes_match in file:
             node_files.append(f"{filepath}/{file}")
-        elif file.endswith('edges.tsv'):
+        elif edges_match in file:
             edge_files.append(f"{filepath}/{file}")
     return node_files, edge_files
 
 
-def read_dfs(files: List[str], add_provided_by: bool = True) -> List[pd.DataFrame]:
+def read_dfs(files: List[str], add_source_col: Optional[str] = "provided_by") -> List[pd.DataFrame]:
     dataframes = []
     for file in files:
-        dataframes.append(read_df(file, add_provided_by=add_provided_by))
+        dataframes.append(read_df(file, add_source_col, file))
     return dataframes
 
 
-def read_df(file: str, add_provided_by: bool = True):
-    df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#')
+def read_tar_dfs(tar: tarfile.TarFile, type_name, add_source_col: str = "provided_by") -> List[pd.DataFrame]:
+    dataframes = []
+    for member in tar.getmembers():
+        if member.isfile() and type_name in member.name:
+            dataframes.append(read_df(tar.extractfile(member), add_source_col, member.name))
+    return dataframes
 
-    if add_provided_by:
-        df["provided_by"] = os.path.basename(file)
+
+def read_df(fh: Union[str, IO[bytes]],
+            add_source_col: Optional[str] = "provided_by",
+            source_col_value: Optional[str] = None) -> pd.DataFrame:
+    df = pd.read_csv(fh, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#')
+    if add_source_col is not None:
+        df[add_source_col] = source_col_value
     return df
+
+
+def read_tar(archive_path: str,
+             nodes_match: str = "_nodes",
+             edges_match: str = "_edges",
+             add_source_col: str = "provided_by"):
+    tar = tarfile.open(archive_path, "r:*")
+    node_dfs = read_tar_dfs(tar, nodes_match, add_source_col)
+    edge_dfs = read_tar_dfs(tar, edges_match, add_source_col)
+    return node_dfs, edge_dfs
 
 
 def write_df(df: pd.DataFrame, filename: str):
@@ -47,47 +67,37 @@ def write_tar(tar_path: str, files: List[str], delete_files=True):
             os.remove(file)
 
 
-def read_tar_dfs(tar: tarfile.TarFile, type_name, add_provided_by: bool = True) -> List[pd.DataFrame]:
-    dataframes = []
-    for member in tar.getmembers():
-        if member.isfile() and type_name in member.name:
-            dataframes.append(read_tar_df(tar.extractfile(member), provided_by = member.name))
-    return dataframes
+def read_kg(source: str = None,
+            node_match: str = "_node",
+            edge_match: str = "_edge",
+            node_file: str = None,
+            edge_file: str = None,
+            add_source_col: str = None) -> MergedKG:
+    # TODO implement duplicate_nodes and dangling_edges
 
+    # This section is very similar to "reading nodes and edge files" section of merge()
+    # These should probably be extracted into a single get_ function
 
-def read_tar_df(file: tarfile.TarInfo, provided_by: str = None, add_provided_by: bool = True) -> pd.DataFrame:
-    df = pd.read_csv(file, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#')
+    if node_file is not None and edge_file is not None:
+        nodes = read_df(node_file, add_source_col, node_file)
+        edges = read_df(edge_file, add_source_col, node_file)
+    elif source is not None:
+        if os.path.isdir(source):
+            [node_file], [edge_file] = get_files(source)
+            nodes = read_df(node_file, add_source_col, node_file)
+            edges = read_df(edge_file, add_source_col, edge_file)
+        elif tarfile.is_tarfile(source):
+            [nodes], [edges] = read_tar(source, node_match, edge_match, add_source_col)
+        else:
+            ValueError("source is not an archive or directory")
+    else:
+        raise ValueError("Must specify either nodes & edges or source")
 
-    if provided_by != None:
-        df["provided_by"] = provided_by
-    return df
-
-
-def read_kg(archive_path: str,
-            add_provided_by: bool = True,
-            # dangling_edges: bool = True,
-            # dangling_edges_path: str = None,
-            nodes_file_name: str = None,
-            edges_file_name: str = None):
-    if not os.path.exists(archive_path):
-        raise FileNotFoundError
-    # if dangling_edges is not None and not os.path.exists(dangling_edges_path):
-    #     raise FileNotFoundError
-
-    # iterate over files in tar, pull _nodes and _edges
-    tar = tarfile.open(archive_path, "r:*")
-    nodes_name = nodes_file_name or "_nodes"
-    edges_name = edges_file_name or "_edges"
-
-    # read into pandas and return a MergedKG instance
-    node_dfs = read_tar_dfs(tar, nodes_name, add_provided_by=add_provided_by)
-    edge_dfs = read_tar_dfs(tar, edges_name, add_provided_by=add_provided_by)
-    kg = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs) # requires import of merge_kg form kg_utils, ok?
-
+    kg = MergedKG(nodes, edges, pd.DataFrame(), pd.DataFrame())
     return kg
 
-def write(kg: MergedKG, name: str, output_dir: str):
 
+def write(kg: MergedKG, name: str, output_dir: str):
     Path(f"{output_dir}/qc").mkdir(exist_ok=True, parents=True)
 
     duplicate_nodes_path = f"{output_dir}/qc/{name}-duplicate-nodes.tsv.gz"

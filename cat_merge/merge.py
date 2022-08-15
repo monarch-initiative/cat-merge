@@ -1,3 +1,5 @@
+import tarfile
+
 import yaml
 import logging
 
@@ -9,9 +11,9 @@ log = logging.getLogger(__name__)
 
 def merge(
         name: str = "merged-kg",
-        input_dir: str = None,  # Optional directory containing node and edge files
-        edges: List[str] = None,  # Optional list of edge files
+        source: str = None,  # Optional directory or tar archive containing node and edge files
         nodes: List[str] = None,  # Optional list of node files
+        edges: List[str] = None,  # Optional list of edge files
         mappings: List[str] = None,  # Optional list of SSSOM mapping files
         output_dir: str = "merged-output",  # Directory to output knowledge graph
         merge_delimiter: str = "|",  # Delimiter to use when merging categories and properties on duplicates
@@ -21,7 +23,7 @@ def merge(
     print(f"""\
 Merging KG files...
   name: {name} 
-  input_dir: {input_dir} 
+  source: {source} 
   nodes: {nodes}
   edges: {edges} 
   mappings: {mappings}
@@ -29,19 +31,25 @@ Merging KG files...
 """)
 
     print("Reading node and edge files")
-    if nodes is not None and len(nodes) > 0 \
-            and edges is not None and len(edges) > 0:
+    if type(nodes) is list and len(nodes) > 0 \
+            and type(edges) is list and len(edges) > 0:
         node_dfs = read_dfs(nodes)
         edge_dfs = read_dfs(edges)
-    elif input_dir is not None:
-        node_files, edge_files = get_files(input_dir)
-        node_dfs = read_dfs(node_files)
-        edge_dfs = read_dfs(edge_files)
+    elif source is not None:
+        if os.path.isdir(source):
+            node_files, edge_files = get_files(source)
+            node_dfs = read_dfs(node_files)
+            edge_dfs = read_dfs(edge_files)
+        elif tarfile.is_tarfile(source):
+            node_dfs, edge_dfs = read_tar(source)
+        else:
+            ValueError("Specified source is not a directory or tar archive")
+    else:
+        raise ValueError("Must specify either nodes & edges as lists or source as a directory or tar archive")
 
     mapping_dfs = []
     if mappings is not None:
-        for file in mappings:
-            mapping_dfs.append(read_df(file, add_provided_by=False))
+        mapping_dfs = read_dfs(mappings, add_source_col=None)
 
     print("Merging...")
     kg = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping_dfs=mapping_dfs, merge_delimiter=merge_delimiter)

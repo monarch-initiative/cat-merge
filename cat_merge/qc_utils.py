@@ -1,3 +1,5 @@
+import pandas as pd
+
 from cat_merge.model.merged_kg import MergedKG
 from typing import Dict, List
 
@@ -64,7 +66,6 @@ def create_edge_node_types_report(edges_provided_by_values, unique_id_from_nodes
 
 
 def create_edges_report(edges, unique_id_from_nodes, nodes):
-
     edges_reports = []
     edges_group = edges.groupby(['provided_by'])[['id', 'object', 'subject', 'predicate', 'category']]
 
@@ -78,38 +79,13 @@ def create_edges_report(edges, unique_id_from_nodes, nodes):
     return edges_reports
 
 
-def create_qc_report(merged_kg: MergedKG) -> Dict:
-    """
-    interface for generating qc report from merged kg
-    :param mergedkg:
-    :return: a dictionary representing the QC report
-    """
-
-    edges = merged_kg.edges
-    dangling_edges = merged_kg.dangling_edges
-    nodes = merged_kg.nodes
-
-    if 'in_taxon' in nodes.columns:
-        nodes['in_taxon'] = nodes['in_taxon'].fillna('missing taxon')
-    nodes['category'] = nodes['category'].fillna('missing category')
-
-    unique_id_from_nodes = nodes["id"]
-
-    ingest_collection = {
-        "edges": [],
-        "nodes": [],
-        "dangling_edges": []
-    }
-
-    # Edges
-    ingest_collection['edges'] = create_edges_report(edges, unique_id_from_nodes, nodes)
-    ingest_collection['dangling_edges'] = create_edges_report(dangling_edges, unique_id_from_nodes, nodes)
-
-
-    # Nodes
-    node_grouping_fields = ['id', 'category']
-    if 'in_taxon' in nodes.columns:
-        node_grouping_fields.append('in_taxon')
+def create_nodes_report(nodes: pd.DataFrame) -> List[Dict]:
+    node_report = []
+    # node_grouping_fields = set(nodes.columns) & {'id', 'category', 'in_taxon'}
+    node_grouping_fields = intersect_lists(list(nodes.columns), ['id', 'category', 'in_taxon'])
+    # node_grouping_fields = ['id', 'category']
+    # if 'in_taxon' in nodes.columns:
+    #     node_grouping_fields.append('in_taxon')
 
     nodes_group = nodes.groupby(['provided_by'])[node_grouping_fields]
     for nodes_provided_by, nodes_provided_by_values in nodes_group:
@@ -121,7 +97,44 @@ def create_qc_report(merged_kg: MergedKG) -> Dict:
         }
         if 'in_taxon' in nodes.columns:
             node_object["taxon"] = list(set(nodes_provided_by_values["in_taxon"]))
-        ingest_collection['nodes'].append(node_object)
+        node_report.append(node_object)
+    return node_report
+
+
+def ifcols_fillna(df: pd.DataFrame, names_values: dict) -> pd.DataFrame:
+    for col_name, fill_value in names_values.items():
+        if col_name in df.columns:
+            df[col_name] = df[col_name].fillna(fill_value)
+    return df
+
+
+def intersect_lists(l1: List, l2: List) -> List:
+    return list(set(l1) & set(l2))
+
+
+def create_qc_report(kg: MergedKG) -> Dict:
+    """
+    interface for generating qc report from merged kg
+    :param kg: a MergeKG with data to create QC report
+    :return: a dictionary representing the QC report
+    """
+
+    # nodes = kg.nodes
+    edges = kg.edges
+    dangling_edges = kg.dangling_edges
+
+    # Nodes
+    fill_nodes = {
+        'in_taxon': 'missing taxon',
+        'category': 'missing category'}
+    nodes = ifcols_fillna(kg.nodes, fill_nodes)
+
+    unique_id_from_nodes = nodes["id"]
+
+    ingest_collection = {
+        "nodes": create_nodes_report(nodes),
+        'edges': create_edges_report(edges, unique_id_from_nodes, nodes),
+        'dangling_edges': create_edges_report(dangling_edges, unique_id_from_nodes, nodes)
+    }
 
     return ingest_collection
-

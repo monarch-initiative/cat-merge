@@ -29,6 +29,8 @@ Merging KG files...
   mappings: {mappings}
   output_dir: {output_dir}
 """)
+    if source is not None and nodes is not None:
+        raise ValueError("Wrong attributes: source and node/edge files cannot both be specified")
 
     print("Reading node and edge files")
     if type(nodes) is list and len(nodes) > 0 \
@@ -41,9 +43,12 @@ Merging KG files...
             node_dfs = read_dfs(node_files)
             edge_dfs = read_dfs(edge_files)
         elif tarfile.is_tarfile(source):
-            node_dfs, edge_dfs = read_tar(source)
+            tar = tarfile.open(source, "r:*")
+            node_dfs = read_tar_dfs(tar, "_nodes")
+            edge_dfs = read_tar_dfs(tar, "_edges")
+            # node_dfs, edge_dfs = read_tar(source)
         else:
-            ValueError("Specified source is not a directory or tar archive")
+            raise ValueError("Specified source is not a directory or tar archive")
     else:
         raise ValueError("Must specify either nodes & edges as lists or source as a directory or tar archive")
 

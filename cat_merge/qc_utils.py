@@ -2,7 +2,7 @@ import pandas as pd
 from grape import Graph  # type: ignore
 
 from cat_merge.model.merged_kg import MergedKG
-from typing import Dict, List
+from typing import Dict, List, Union
 
 
 def create_edge_report(edges_provided_by, edges_provided_by_values, unique_id_from_nodes) -> Dict:
@@ -53,10 +53,12 @@ def create_predicate_report(edges_provided_by_values, unique_id_from_nodes) -> L
 def create_edge_node_types_report(edges_provided_by_values, nodes) -> List[Dict]:
     node_types = []
     # list of subjects and objects from edges file that are in nodes file
-    node_type_list = list_intersect(edges_provided_by_values['subject'], nodes["id"]) \
-                     + list_intersect(edges_provided_by_values['object'], nodes["id"]),
-    # (list(set(edges_provided_by_values['subject']) & set(nodes["id"]))) + (list(set(
-    #     edges_provided_by_values['object']) & set(nodes["id"])))
+    #TODO: This is taking way too long; I need to optimize series_intersect
+    
+    # node_type_list = series_intersect(edges_provided_by_values['subject'], nodes["id"])\
+    #                       + series_intersect(edges_provided_by_values['object'], nodes["id"]),
+    node_type_list = (list(set(edges_provided_by_values['subject']) & set(nodes["id"]))) + (list(set(
+        edges_provided_by_values['object']) & set(nodes["id"])))
     node_type_df = nodes[nodes['id'].isin(node_type_list)]
     node_grouping_fields = ['id', 'category']
     if 'in_taxon' in nodes.columns:
@@ -67,13 +69,14 @@ def create_edge_node_types_report(edges_provided_by_values, nodes) -> List[Dict]
             "name": node_type_provided_by,
             "categories": col_to_yaml(node_type_provided_by_values['category']),
             "namespaces": col_to_yaml(get_namespace(node_type_provided_by_values['id'])),
-            "total_number": col_to_yaml(node_type_provided_by_values['id'].tolist()),
+            "total_number": node_type_provided_by_values['id'].size,
             # id that are in nodes file but are not in subject or object from edges file
-            "missing": series_difference(node_type_provided_by_values['id'], edges_provided_by_values['subject']).size \
-                       + series_difference(node_type_provided_by_values['id'], edges_provided_by_values['object'].size),
+            #TODO: Another spot where series_difference performance is abysmal, reverting until I fix this.
 
-            # "missing": len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['subject'])))
-            #            + len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['object'])))
+            # "missing": series_difference(node_type_provided_by_values['id'], edges_provided_by_values['subject']).size \
+            #            + series_difference(node_type_provided_by_values['id'], edges_provided_by_values['object']).size,
+            "missing": len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['subject'])))
+                       + len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['object'])))
         }
         if 'in_taxon' in nodes.columns:
             node_type_object["taxon"] = col_to_yaml(node_type_provided_by_values["in_taxon"])

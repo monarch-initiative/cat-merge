@@ -16,8 +16,8 @@ def create_edge_report(edges_provided_by, edges_provided_by_values, unique_id_fr
         "categories": col_to_yaml(edges_provided_by_values['category']),
         "total_number": edges_provided_by_values['id'].size,
         # unique subjects and objects in edges but not in unique id nodes file
-        "missing": get_missing(
-            [edges_provided_by_values['subject'], edges_provided_by_values['object']], unique_id_from_nodes),
+        "missing": len(get_missing(
+            [edges_provided_by_values['subject'], edges_provided_by_values['object']], unique_id_from_nodes)),
         # "missing": list_difference(pd.concat(
         #     [edges_provided_by_values['subject'], edges_provided_by_values['object']]
         # ).drop_duplicates().sort_values().tolist(), unique_id_from_nodes.tolist()),
@@ -96,7 +96,7 @@ def create_edges_report(edges, nodes):
 
 
 def get_namespace(col: pd.Series) -> pd.Series:
-    return col if len(col) is 0 else col.str.split(':').str[0]
+    return col if len(col) == 0 else col.str.split(':').str[0]
 
 
 def col_to_yaml(col: pd.Series) -> List[str]:

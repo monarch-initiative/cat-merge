@@ -39,10 +39,10 @@ def create_predicate_report(edges_provided_by_values, unique_id_from_nodes) -> L
             "total_number": predicate_values['id'].size,
             "missing_subjects": len(set(predicate_values['subject']) - set(unique_id_from_nodes)),
             "missing_objects": len(set(predicate_values['object']) - set(unique_id_from_nodes)),
-            "missing_subject_namespaces": col_to_yaml(get_namespace(series_difference(
+            "missing_subject_namespaces": col_to_yaml(get_namespace(get_difference(
                 predicate_values['subject'], unique_id_from_nodes))),
             # list(set([x.split(":")[0] for x in (set(predicate_values['subject']) - set(unique_id_from_nodes))])),
-            "missing_object_namespaces": col_to_yaml(get_namespace(series_difference(
+            "missing_object_namespaces": col_to_yaml(get_namespace(get_difference(
                 predicate_values['object'], unique_id_from_nodes))),
             # list(set([x.split(":")[0] for x in (set(predicate_values['object']) - set(unique_id_from_nodes))]))
         }
@@ -53,12 +53,10 @@ def create_predicate_report(edges_provided_by_values, unique_id_from_nodes) -> L
 def create_edge_node_types_report(edges_provided_by_values, nodes) -> List[Dict]:
     node_types = []
     # list of subjects and objects from edges file that are in nodes file
-    #TODO: This is taking way too long; I need to optimize series_intersect
-    
-    # node_type_list = series_intersect(edges_provided_by_values['subject'], nodes["id"])\
-    #                       + series_intersect(edges_provided_by_values['object'], nodes["id"]),
-    node_type_list = (list(set(edges_provided_by_values['subject']) & set(nodes["id"]))) + (list(set(
-        edges_provided_by_values['object']) & set(nodes["id"])))
+    node_type_list = list(get_intersection(edges_provided_by_values['subject'], nodes["id"])) \
+                     + list(get_intersection(edges_provided_by_values['object'], nodes["id"]))
+    # node_type_list = (list(set(edges_provided_by_values['subject']) & set(nodes["id"]))) + (list(set(
+    #     edges_provided_by_values['object']) & set(nodes["id"])))
     node_type_df = nodes[nodes['id'].isin(node_type_list)]
     node_grouping_fields = ['id', 'category']
     if 'in_taxon' in nodes.columns:
@@ -71,12 +69,10 @@ def create_edge_node_types_report(edges_provided_by_values, nodes) -> List[Dict]
             "namespaces": col_to_yaml(get_namespace(node_type_provided_by_values['id'])),
             "total_number": node_type_provided_by_values['id'].size,
             # id that are in nodes file but are not in subject or object from edges file
-            #TODO: Another spot where series_difference performance is abysmal, reverting until I fix this.
-
-            # "missing": series_difference(node_type_provided_by_values['id'], edges_provided_by_values['subject']).size \
-            #            + series_difference(node_type_provided_by_values['id'], edges_provided_by_values['object']).size,
-            "missing": len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['subject'])))
-                       + len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['object'])))
+            "missing": get_difference(node_type_provided_by_values['id'], edges_provided_by_values['subject']).size \
+                       + get_difference(node_type_provided_by_values['id'], edges_provided_by_values['object']).size,
+            # "missing": len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['subject'])))
+            #            + len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['object'])))
         }
         if 'in_taxon' in nodes.columns:
             node_type_object["taxon"] = col_to_yaml(node_type_provided_by_values["in_taxon"])
@@ -109,12 +105,12 @@ def col_to_yaml(col: pd.Series) -> List[str]:
 
 
 def get_missing(cols: List[pd.Series], ids: pd.Series) -> List[str]:
-    return list_difference(pd.concat(cols).drop_duplicates().sort_values().tolist(), ids.tolist())
+    return get_difference(pd.concat(cols).drop_duplicates().sort_values().tolist(), ids.tolist())
 
 
 def create_nodes_report(nodes: pd.DataFrame) -> List[Dict]:
     node_report = []
-    node_grouping_fields = list_intersect(list(nodes.columns), ['id', 'category', 'in_taxon'])
+    node_grouping_fields = get_intersection(list(nodes.columns), ['id', 'category', 'in_taxon'])
 
     nodes_group = nodes.groupby(['provided_by'])[node_grouping_fields]
     for nodes_provided_by, nodes_provided_by_values in nodes_group:
@@ -130,29 +126,31 @@ def create_nodes_report(nodes: pd.DataFrame) -> List[Dict]:
     return node_report
 
 
-def ifcols_fillna(df: pd.DataFrame, names_values: dict) -> pd.DataFrame:
+def cols_fill_na(df: pd.DataFrame, names_values: dict) -> pd.DataFrame:
     for col_name, fill_value in names_values.items():
         if col_name in df.columns:
             df[col_name] = df[col_name].fillna(fill_value)
     return df
 
 
-def list_intersect(a: List, b: List) -> List:
-    a1 = [*dict.fromkeys(a)]  # remove duplicates
-    return [v for v in a1 if v in b]  # maintain oder of list a
+def get_intersection(a: Union[List, pd.Series], b: Union[List, pd.Series]) -> Union[List, pd.Series]:
+    if type(a) != type(b):
+        raise ValueError("get_intersection: arguments must have the same type")
+    elif not (type(a) is list or type(a) is pd.Series):
+        raise ValueError("get_intersection: arguments must be of type list or pandas.Series")
+
+    s = sorted(list(set(a) & set(b)))
+    return s if type(a) is list else pd.Series(s, dtype=a.dtype, name=a.name)
 
 
-def series_intersect(a: pd.Series, b: pd.Series) -> pd.Series:
-    return pd.Series(list_intersect(a.to_list(), b.tolist()))
+def get_difference(a: Union[List, pd.Series], b: Union[List, pd.Series]) -> Union[List, pd.Series]:
+    if type(a) != type(b):
+        raise ValueError("get_difference: arguments must have the same type")
+    elif not (type(a) is list or type(a) is pd.Series):
+        raise ValueError("get_difference: arguments must be of type list or pandas.Series")
 
-
-def list_difference(a: List, b: List) -> List:
-    a1 = [*dict.fromkeys(a)]  # remove duplicates
-    return [v for v in a1 if v not in b]  # maintain oder of list a
-
-
-def series_difference(a: pd.Series, b: pd.Series) -> pd.Series:
-    return pd.Series(list_difference(a.to_list(), b.tolist()), dtype=str)
+    s = sorted(list(set(a) - set(b)))
+    return s if type(a) is list else pd.Series(s, dtype=a.dtype, name=a.name)
 
 
 def load_graph(name: str, version: str, edges_path: str,
@@ -208,7 +206,7 @@ def create_qc_report(kg: MergedKG) -> Dict:
     :return: a dictionary representing the QC report
     """
 
-    nodes = ifcols_fillna(kg.nodes, {'in_taxon': 'missing taxon', 'category': 'missing category'})
+    nodes = cols_fill_na(kg.nodes, {'in_taxon': 'missing taxon', 'category': 'missing category'})
     ingest_collection = {
         "nodes": create_nodes_report(nodes),
         'edges': create_edges_report(kg.edges, nodes),

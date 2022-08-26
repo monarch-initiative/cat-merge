@@ -15,16 +15,18 @@ def qc_report(archive_path: str,
               # dangling_edges_path: str = None,
               nodes_file_name: str = None,
               edges_file_name: str = None):
-
     kg = read_kg(archive_path)
     report = create_qc_report(kg)
     del kg
 
-    g = load_graph(name="test_name",
-                   version="0.1",
-                   edges_path=edges_file_name,
-                   nodes_path=nodes_file_name)
-    report["stats"] = create_stats_report(g)
+    if nodes_file_name is None or edges_file_name is None:
+        pass
+    else:
+        g = load_graph(name="test_name",
+                       version="0.1",
+                       edges_path=edges_file_name,
+                       nodes_path=nodes_file_name)
+        report["stats"] = create_stats_report(g)
 
     with open(f"{output_dir}/{output_name}", "w") as report_file:
         yaml.dump(report, report_file)

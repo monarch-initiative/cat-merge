@@ -208,7 +208,8 @@ def create_qc_report(kg: MergedKG) -> Dict:
 
     nodes = cols_fill_na(kg.nodes, {'in_taxon': 'missing taxon', 'category': 'missing category'})
     ingest_collection = {
-        "nodes": create_nodes_report(nodes),
+        'nodes': create_nodes_report(nodes),
+        # 'duplicate_nodes': create_nodes_report(kg.duplicate_nodes)
         'edges': create_edges_report(kg.edges, nodes),
         'dangling_edges': create_edges_report(kg.dangling_edges, nodes)
     }

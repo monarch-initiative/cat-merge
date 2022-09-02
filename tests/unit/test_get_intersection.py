@@ -1,7 +1,7 @@
 import pytest
 # from tests.test_utils import string_df
 # from cat_merge.merge_utils import concat_dataframes
-from cat_merge.qc_utils import get_difference
+from cat_merge.qc_utils import get_intersection
 from typing import List
 import pandas as pd
 
@@ -18,14 +18,14 @@ def list2() -> List[str]:
     return L
 
 
-def test_list_difference_length(list1, list2):
-    test_list = get_difference(list1, list2)
-    assert (len(test_list) == 2)
+def test_list_intersection_length(list1, list2):
+    test_series = get_intersection(list1, list2)
+    assert (len(test_series) == 1)
 
 
-def test_list_difference_order(list1, list2):
-    test_list = get_difference(list1, list2)
-    assert (test_list == ['that', 'this'])
+def test_list_intersection_order(list1, list2):
+    test_series = get_intersection(list1, list2)
+    assert (test_series == ['the'])
 
 
 @pytest.fixture
@@ -40,15 +40,14 @@ def series2() -> pd.Series:
     return S
 
 
-def test_series_difference_length(series1, series2):
-    test_series = get_difference(series1, series2)
-    assert (len(test_series) == 2)
+def test_series_intersection_length(series1, series2):
+    test_series = get_intersection(series1, series2)
+    assert (len(test_series) == 1)
 
 
-def test_series_difference_order(series1, series2):
-    test_series = get_difference(series1, series2)
-    assert (test_series[0] == 'that')
-    assert (test_series[1] == 'this')
+def test_series_intersection_order(list1, list2):
+    test_series = get_intersection(list1, list2)
+    assert (test_series[0] == 'the')
 
 
 # def test_length(dataframes):

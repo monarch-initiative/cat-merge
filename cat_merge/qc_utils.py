@@ -39,11 +39,11 @@ def create_predicate_report(edges_provided_by_values, unique_id_from_nodes) -> L
             "total_number": predicate_values['id'].size,
             "missing_subjects": len(set(predicate_values['subject']) - set(unique_id_from_nodes)),
             "missing_objects": len(set(predicate_values['object']) - set(unique_id_from_nodes)),
-            "missing_subject_namespaces": col_to_yaml(get_namespace(get_difference(
-                predicate_values['subject'], unique_id_from_nodes))),
+            "missing_subject_namespaces":
+                col_to_yaml(get_namespace(get_difference(predicate_values['subject'], unique_id_from_nodes))),
             # list(set([x.split(":")[0] for x in (set(predicate_values['subject']) - set(unique_id_from_nodes))])),
-            "missing_object_namespaces": col_to_yaml(get_namespace(get_difference(
-                predicate_values['object'], unique_id_from_nodes))),
+            "missing_object_namespaces":
+                col_to_yaml(get_namespace(get_difference(predicate_values['object'], unique_id_from_nodes))),
             # list(set([x.split(":")[0] for x in (set(predicate_values['object']) - set(unique_id_from_nodes))]))
         }
         predicates.append(predicate_object)
@@ -53,8 +53,11 @@ def create_predicate_report(edges_provided_by_values, unique_id_from_nodes) -> L
 def create_edge_node_types_report(edges_provided_by_values, nodes) -> List[Dict]:
     node_types = []
     # list of subjects and objects from edges file that are in nodes file
-    node_type_list = list(get_intersection(edges_provided_by_values['subject'], nodes["id"])) \
-                     + list(get_intersection(edges_provided_by_values['object'], nodes["id"]))
+    subject_nodes = list(get_intersection(edges_provided_by_values['subject'], nodes["id"]))
+    object_nodes = list(get_intersection(edges_provided_by_values['object'], nodes["id"]))
+    node_type_list = subject_nodes + object_nodes
+    # node_type_list = list(get_intersection(edges_provided_by_values['subject'], nodes["id"])) \
+    #                  + list(get_intersection(edges_provided_by_values['object'], nodes["id"]))
     # node_type_list = (list(set(edges_provided_by_values['subject']) & set(nodes["id"]))) + (list(set(
     #     edges_provided_by_values['object']) & set(nodes["id"])))
     node_type_df = nodes[nodes['id'].isin(node_type_list)]
@@ -63,14 +66,17 @@ def create_edge_node_types_report(edges_provided_by_values, nodes) -> List[Dict]
         node_grouping_fields.append('in_taxon')
     node_type_group = node_type_df.groupby(['provided_by'])[node_grouping_fields]
     for node_type_provided_by, node_type_provided_by_values in node_type_group:
+        missing_subjects = get_difference(node_type_provided_by_values['id'], edges_provided_by_values['subject'])
+        missing_objects = get_difference(node_type_provided_by_values['id'], edges_provided_by_values['object'])
         node_type_object = {
             "name": node_type_provided_by,
             "categories": col_to_yaml(node_type_provided_by_values['category']),
             "namespaces": col_to_yaml(get_namespace(node_type_provided_by_values['id'])),
             "total_number": node_type_provided_by_values['id'].size,
             # id that are in nodes file but are not in subject or object from edges file
-            "missing": get_difference(node_type_provided_by_values['id'], edges_provided_by_values['subject']).size \
-                       + get_difference(node_type_provided_by_values['id'], edges_provided_by_values['object']).size,
+            "missing": missing_subjects.size + missing_objects.size,
+            # "missing": get_difference(node_type_provided_by_values['id'], edges_provided_by_values['subject']).size \
+            #            + get_difference(node_type_provided_by_values['id'], edges_provided_by_values['object']).size,
             # "missing": len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['subject'])))
             #            + len(set(node_type_provided_by_values['id']) - (set(edges_provided_by_values['object'])))
         }
@@ -159,8 +165,8 @@ def load_graph(name: str, version: str, edges_path: str,
     Load a graph with Ensmallen (from grape).
     :param name: OBO name
     :param version: OBO version
-    :param edges_path: path to edgefile
-    :param nodes_path: path to nodefile
+    :param edges_path: path to edge file
+    :param nodes_path: path to node file
     :return: ensmallen Graph object
     """
 

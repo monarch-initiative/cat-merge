@@ -8,6 +8,7 @@ authors = [
     "Tim Putman <tim@tislab.org>",
     "Kevin Schaper <kevin@tislab.org>",
     "Victoria Soesanto <victoria@tislab.org",
+    "Corey Cox <corey@tislab.org>"
 ]
 
 [tool.poetry.dependencies]
@@ -15,6 +16,7 @@ python = "^3.8"
 click = "^8"
 pandas = "^1.4.2"
 mkdocs = "^1.3.0"
+grape = "^0.1.23"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"

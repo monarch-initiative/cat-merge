@@ -14,3 +14,8 @@ def test_get_namespace_length(series1):
     assert (len(test_namespace) == 3)
 
 
+def test_get_namespace_order(series1):
+    test_namespace = get_namespace(series1)
+    assert (test_namespace[0] == 'TEST')
+    assert (test_namespace[1] == 'TEST2')
+    assert (test_namespace[2] == 'TEST3')

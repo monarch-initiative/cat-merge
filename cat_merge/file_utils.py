@@ -101,9 +101,12 @@ def read_kg(source: str = None,
             tar = tarfile.open(source, "r:*")
             [nodes] = read_tar_dfs(tar, node_match, add_source_col)
             [edges] = read_tar_dfs(tar, edge_match, add_source_col)
-            [duplicate_nodes] = read_tar_dfs(tar, edge_match, add_source_col)
-            [dangling_edges] = read_tar_dfs(tar, edge_match, add_source_col)
-            # [nodes], [edges] = read_tar(source, node_match, edge_match, add_source_col)
+            tar_duplicate_nodes = read_tar_dfs(tar, duplicate_node_match, add_source_col)
+            if len(tar_duplicate_nodes) == 1:
+                [duplicate_nodes] = tar_duplicate_nodes
+            tar_dangling_edges = read_tar_dfs(tar, dangling_edge_match, add_source_col)
+            if len(tar_dangling_edges) == 1:
+                [dangling_edges] = tar_dangling_edges
         else:
             raise ValueError("source is not an archive or directory")
     elif node_file is not None and edge_file is not None:

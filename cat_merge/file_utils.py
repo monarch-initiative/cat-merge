@@ -90,9 +90,13 @@ def read_kg(source: str = None,
             [node_file], [edge_file] = get_files(source)
             nodes = read_df(node_file, add_source_col, node_file)
             edges = read_df(edge_file, add_source_col, edge_file)
-            [duplicate_node_file], [dangling_edge_file] = get_files(source, duplicate_node_match, dangling_edge_match)
-            duplicate_nodes = read_df(duplicate_node_file, add_source_col, node_file)
-            dangling_edges = read_df(dangling_edge_file, add_source_col, node_file)
+            duplicate_files = get_files(source, duplicate_node_match, dangling_edge_match)
+            if len(duplicate_files[0]) == 1:
+                [duplicate_node_file] = duplicate_files[0]
+                duplicate_nodes = read_df(duplicate_node_file, add_source_col, node_file)
+            if len(duplicate_files[0]) == 1:
+                [dangling_edge_file] = duplicate_files[1]
+                dangling_edges = read_df(dangling_edge_file, add_source_col, node_file)
         elif tarfile.is_tarfile(source):
             tar = tarfile.open(source, "r:*")
             [nodes] = read_tar_dfs(tar, node_match, add_source_col)

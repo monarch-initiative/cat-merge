@@ -1,5 +1,5 @@
 import pandas as pd
-from grape import Graph  # type: ignore
+# from grape import Graph  # type: ignore
 
 from cat_merge.model.merged_kg import MergedKG
 from typing import Dict, List, Union
@@ -157,24 +157,6 @@ def get_difference(a: Union[List, pd.Series], b: Union[List, pd.Series]) -> Unio
 
     s = sorted(list(set(a) - set(b)))
     return s if type(a) is list else pd.Series(s, dtype=a.dtype, name=a.name)
-
-
-def create_stats_report(g: Graph) -> List[Dict]:
-    node_count = g.get_number_of_nodes()
-    edge_count = g.get_number_of_edges()
-    connected_components = g.get_number_of_connected_components()
-    singleton_count = g.get_number_of_singleton_nodes()
-    max_node_degree = g.get_maximum_node_degree()
-    mean_node_degree = g.get_node_degrees_mean()
-
-    graph_stats = {"Nodes": node_count,
-                   "Edges": edge_count,
-                   "ConnectedComponents": connected_components,
-                   "Singletons": singleton_count,
-                   "MaxNodeDegree": max_node_degree,
-                   "MeanNodeDegree": "{:.2f}".format(mean_node_degree)}
-
-    return [graph_stats]
 
 
 def create_qc_report(kg: MergedKG) -> Dict:

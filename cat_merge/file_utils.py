@@ -124,34 +124,6 @@ def read_kg(source: str = None,
     return kg
 
 
-def load_graph(name: str, version: str, edges_path: str,
-               nodes_path: str) -> Graph:
-    """
-    Load a graph with Ensmallen (from grape).
-    :param name: OBO name
-    :param version: OBO version
-    :param edges_path: path to edge file
-    :param nodes_path: path to node file
-    :return: ensmallen Graph object
-    """
-
-    loaded_graph = Graph.from_csv(name=f"{name}_version_{version}",
-                                  edge_path=edges_path,
-                                  sources_column="subject",
-                                  destinations_column="object",
-                                  edge_list_header=True,
-                                  edge_list_separator="\t",
-                                  node_path=nodes_path,
-                                  nodes_column="id",
-                                  node_list_header=True,
-                                  node_list_separator="\t",
-                                  directed=False,
-                                  verbose=True
-                                  )
-
-    return loaded_graph
-
-
 def write(kg: MergedKG, name: str, output_dir: str):
     Path(f"{output_dir}/qc").mkdir(exist_ok=True, parents=True)
 

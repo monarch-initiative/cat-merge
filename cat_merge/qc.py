@@ -18,8 +18,6 @@ def qc_report(archive_path: str,
 
     with open(f"{output_dir}/{output_name}", "w") as report_file:
         yaml.dump(report, report_file)
-<<<<<<< Updated upstream
-=======
 
 
 def print_types(a: Union[Dict, List, str]):
@@ -196,4 +194,4 @@ def qc_compare(qc_file_a: str, qc_file_b: str):
 
     qc_compare_report = compare_yaml(qc_yaml_a, qc_yaml_b)
     return qc_compare_report
->>>>>>> Stashed changes
+

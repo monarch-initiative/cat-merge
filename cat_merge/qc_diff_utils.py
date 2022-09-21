@@ -1,30 +1,7 @@
-import yaml
 from typing import Dict, List, Union
 
 
-def print_types(a: Union[Dict, List, str]):
-    print(type(a))
-    match a:
-        case dict():
-            for i, j in a.items():
-                print(i)
-                print_types(j)
-        case list():
-            for i in a:
-                print_types(i)
-
-
-# def create_qc_nodes(nodes: List) -> Dict:
-#     qc_nodes = {}
-#     for i in nodes:
-#         qc_nodes[i.name] = i
-
-# def create_qc_edges(edges: List) -> Dict:
-
-
 def compare_nodes_qc(a_nodes: Union[List, None], b_nodes: Union[List, None]):
-    # if a_nodes is None and b_nodes is None:
-    #     return None
     node_compare = {}
     missing = ""
 
@@ -50,9 +27,6 @@ def compare_nodes_qc(a_nodes: Union[List, None], b_nodes: Union[List, None]):
             source[missing + key] = diff_type(a_source.get(key), b_source.get(key))
         node_compare[name] = source
     return node_compare
-
-
-# compare_nodes_qc(qc_yaml_a.get("nodes"), qc_yaml_b.get("nodes"))
 
 
 def diff_type(a: Union[List, str, int], b: Union[List, str, int, None]):

@@ -7,21 +7,20 @@ def compare_nodes_qc(a_nodes: Union[List, None], b_nodes: Union[List, None]):
 
     a_names = get_source_names(a_nodes)
     b_names = get_source_names(b_nodes)
-    # TODO Drop duplicates
-    all_names = list(a_names) + list(b_names)
+    all_names = dict.fromkeys(a_names + b_names)
 
     for name in all_names:
-        if a_names.get(name) is None:
-            a_source = get_empty(b_nodes[list(b_names).index(name)])
+        if name in a_names:
+            a_source = a_nodes[a_names.index(name)]
+        else:
+            a_source = get_empty(b_nodes[b_names.index(name)])
             missing = "-"
-        else:
-            a_source = a_nodes[list(a_names).index(name)]
 
-        if b_names.get(name) is None:
-            b_source = get_empty(a_nodes[list(a_names).index(name)])
-            missing = "+"
+        if name in b_names:
+            b_source = b_nodes[b_names.index(name)]
         else:
-            b_source = b_nodes[list(b_names).index(name)]
+            b_source = get_empty(a_nodes[a_names.index(name)])
+            missing = "+"
 
         source = {}
         for key in a_source.keys():
@@ -122,14 +121,15 @@ def get_empty(x: Union[List, Dict]) -> Union[List, Dict, None]:
             raise NotImplementedError
 
 
-def get_source_names(sources: Union[List[Dict], None]) -> Dict:
+def get_source_names(sources: Union[List[Dict], None]) -> List:
     if sources is None:
-        return dict()
+        return list()
 
-    names = dict()
+    names = list()
     for s in sources:
-        name = s.get("name")
-        names[name] = s
+        # name = s.get("name")
+        # names[name] = s
+        names.append(s.get("name"))
     return names
 
 

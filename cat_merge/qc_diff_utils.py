@@ -10,17 +10,17 @@ def compare_nodes_qc(a_nodes: Union[List, None], b_nodes: Union[List, None]):
     all_names = dict.fromkeys(a_names + b_names)
 
     for name in all_names:
-        if name in a_names:
-            a_source = a_nodes[a_names.index(name)]
-        else:
-            a_source = get_empty(b_nodes[b_names.index(name)])
-            missing = "-"
-
-        if name in b_names:
+        if name not in a_names:
             b_source = b_nodes[b_names.index(name)]
-        else:
-            b_source = get_empty(a_nodes[a_names.index(name)])
+            a_source = get_empty(b_source)
+            missing = "-"
+        elif name not in b_names:
+            a_source = a_nodes[a_names.index(name)]
+            b_source = get_empty(a_source)
             missing = "+"
+        else:
+            b_source = b_nodes[b_names.index(name)]
+            a_source = a_nodes[a_names.index(name)]
 
         source = {}
         for key in a_source.keys():

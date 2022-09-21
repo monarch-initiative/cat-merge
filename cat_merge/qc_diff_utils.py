@@ -7,6 +7,7 @@ def compare_nodes_qc(a_nodes: Union[List, None], b_nodes: Union[List, None]):
 
     a_names = get_source_names(a_nodes)
     b_names = get_source_names(b_nodes)
+    # TODO Drop duplicates
     all_names = list(a_names) + list(b_names)
 
     for name in all_names:
@@ -117,7 +118,8 @@ def get_empty(x: Union[List, Dict]) -> Union[List, Dict, None]:
             return None
         case _:
             # We don't know how to deal with anything else, i.e. sets or tuples.
-            raise ValueError
+            # TODO: add message to NotImplementedError
+            raise NotImplementedError
 
 
 def get_source_names(sources: Union[List[Dict], None]) -> Dict:

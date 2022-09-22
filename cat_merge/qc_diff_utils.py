@@ -117,8 +117,8 @@ def get_empty(x: Union[List, Dict]) -> Union[List, Dict, None]:
             return None
         case _:
             # We don't know how to deal with anything else, i.e. sets or tuples.
-            # TODO: add message to NotImplementedError
-            raise NotImplementedError
+            msg = "get_empty: Type not implemented: " + str(type(x))
+            raise NotImplementedError(msg)
 
 
 def get_source_names(sources: Union[List[Dict], None]) -> List:

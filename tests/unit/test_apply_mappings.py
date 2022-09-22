@@ -18,13 +18,13 @@ def edges():
 def mapping():
     mapping = u"""\
     subject_id  predicate       object_id
-    XGene:1     skos:exactMatch Gene:1
-    XGene:2     skos:exactMatch Gene:2
-    XGene:3     skos:exactMatch Gene:3
-    XDisease:1  skos:exactMatch Disease:1
-    XDisease:2  skos:exactMatch Disease:2
-    XDisease:3  skos:exactMatch Disease:3
-    XDisease:4  skos:exactMatch Disease:4
+    Gene:1     skos:exactMatch XGene:1
+    Gene:2     skos:exactMatch XGene:2
+    Gene:3     skos:exactMatch XGene:3
+    Disease:1  skos:exactMatch XDisease:1
+    Disease:2  skos:exactMatch XDisease:2
+    Disease:3  skos:exactMatch XDisease:3
+    Disease:4  skos:exactMatch XDisease:4
     """
     return string_df(mapping)
 

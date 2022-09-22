@@ -5,35 +5,43 @@ from typing import List
 
 @pytest.fixture
 def list1() -> List:
-    return ["item1", "item2", "item3", "item7"]
+    return ['item1', 'item7', 'item2']
 
 
-# def test_diff_lists_match(str1):
-#     test_str_match = diff_str(str1, str1)
-#     assert (test_str_match == "source1.tsv")
-#
-#
-# def test_diff_str_a_none(str1):
-#     test_str_a_none = diff_str(None, str1)
-#     assert (test_str_a_none == "-source1.tsv")
-#
-#
-# def test_diff_str_b_none(str1):
-#     test_str_b_none = diff_str(str1, None)
-#     assert (test_str_b_none == "+source1.tsv")
-#
-#
-# @pytest.fixture
-# def empty_list() -> List:
-#     return []
-#
-#
-# @pytest.fixture
-# def str2() -> str:
-#     return "source2.tsv"
-#
-#
-# def test_diff_int_no_match(str1, str2):
-#     test_str_no_match = diff_str(str1, str2)
-#     result = ["+source1.tsv", "-source2.tsv"]
-#     assert (test_str_no_match == result)
+def test_diff_list_a_none(list1):
+    assert diff_lists(None, list1) == ['-item1', '-item7', '-item2']
+
+
+def test_diff_lists_b_none(list1):
+    assert diff_lists(list1, None) == ['+item1', '+item7', '+item2']
+
+
+@pytest.fixture
+def list1_copy() -> List:
+    return ['item1', 'item7', 'item2']
+
+
+def test_diff_lists_match(list1, list1_copy):
+    assert diff_lists(list1, list1_copy) == ['item1', 'item7', 'item2']
+
+
+@pytest.fixture
+def empty_list() -> List:
+    return list()
+
+
+def test_diff_lists_a_empty(empty_list, list1):
+    assert diff_lists(empty_list, list1) == ['-item1', '-item7', '-item2']
+
+
+def test_diff_lists_b_empty(list1, empty_list):
+    assert diff_lists(list1, empty_list) == ['+item1', '+item7', '+item2']
+
+
+@pytest.fixture
+def list2() -> List:
+    return ['item7', 'item1', 'item3']
+
+
+def test_diff_int_no_match(list1, list2):
+    assert diff_lists(list1, list2) == ['item1', 'item7', '+item2', '-item3']

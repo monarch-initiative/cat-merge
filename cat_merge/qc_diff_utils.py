@@ -113,7 +113,7 @@ def diff_int(a: Union[int, None], b: Union[int, None]) -> Union[int, str, Dict]:
     return diff
 
 
-def get_empty(x: Union[List, Dict]) -> Union[List, Dict, None]:
+def get_empty(x: Union[List, Dict, int, str]) -> Union[List, Dict, None]:
     """Create an empty version of the given object"""
     match x:
         case list():

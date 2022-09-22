@@ -1,7 +1,15 @@
 from typing import Dict, List, Union
 
 
-def compare_nodes_qc(a_nodes: Union[List, None], b_nodes: Union[List, None]):
+def diff_yaml(a_yaml: Dict, b_yaml: Dict) -> Dict:
+    yaml_qc_compare = {}
+    for key in dict.fromkeys(list(a_yaml.keys()) + list(b_yaml.keys())):
+        yaml_qc_compare[key] = diff_elem(a_yaml.get(key), b_yaml.get(key))
+
+    return yaml_qc_compare
+
+
+def diff_elem(a_nodes: Union[List, None], b_nodes: Union[List, None]):
     node_compare = {}
     missing = ""
 
@@ -29,17 +37,17 @@ def compare_nodes_qc(a_nodes: Union[List, None], b_nodes: Union[List, None]):
     return node_compare
 
 
-def diff_type(a: Union[List, str, int], b: Union[List, str, int, None]):
+def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) -> Union[List, str, int, None]:
     if type(a) != type(b) and not (a is None or b is None):
         msg = "diff_type: operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
         raise TypeError(msg)
 
-    diff: Union[Dict, List, int, str]
+    diff: Union[Dict, List, int, str, None]
     case_type = a if a is not None else b
     match case_type:
         case list():
             if len(case_type) > 0 and type(case_type[0]) is dict:
-                diff = compare_nodes_qc(a, b)
+                diff = diff_elem(a, b)
             else:
                 diff = diff_lists(a, b)
         case str():
@@ -57,8 +65,8 @@ def diff_type(a: Union[List, str, int], b: Union[List, str, int, None]):
 
 def diff_lists(a: Union[List, None], b: Union[List, None]) -> List:
     diff = []
-    a = a if a is not None else []
-    b = b if b is not None else []
+    a = [] if a is None else a
+    b = [] if b is None else b
     for key in dict.fromkeys(a + b):
         if key in a and key in b:
             diff.append(key)
@@ -69,17 +77,21 @@ def diff_lists(a: Union[List, None], b: Union[List, None]) -> List:
     return diff
 
 
-def diff_str(a: str, b: str) -> Union[str, List]:
+def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
     diff: Union[str, List]
     if a == b:
         diff = a
+    elif a is None:
+        diff = "-" + b
+    elif b is None:
+        diff = "+" + a
     else:
-        diff = ["+" + str(a), "-" + str(b)]
+        diff = ["+" + a, "-" + b]
     return diff
 
 
 def diff_int(a: int, b: int) -> Union[int, str, Dict]:
-    diff: Union[int, Dict]
+    diff: Union[int, str, Dict]
     if a == b:
         diff = a
     elif a is None:
@@ -131,11 +143,3 @@ def get_source_names(sources: Union[List[Dict], None]) -> List:
         # names[name] = s
         names.append(s.get("name"))
     return names
-
-
-def diff_yaml(a_yaml: Dict, b_yaml: Dict) -> Dict:
-    yaml_qc_compare = {}
-    for key in dict.fromkeys(list(a_yaml.keys()) + list(b_yaml.keys())):
-        yaml_qc_compare[key] = compare_nodes_qc(a_yaml.get(key), b_yaml.get(key))
-
-    return yaml_qc_compare

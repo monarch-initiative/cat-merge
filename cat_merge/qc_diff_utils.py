@@ -93,7 +93,7 @@ def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
     return diff
 
 
-def diff_int(a: int, b: int) -> Union[int, str, Dict]:
+def diff_int(a: Union[int, None], b: Union[int, None]) -> Union[int, str, Dict]:
     diff: Union[int, str, Dict]
     if a is None and b is None:
         message = "diff_int: both values to compare are None, this shouldn't happen."

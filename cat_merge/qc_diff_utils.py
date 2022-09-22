@@ -122,7 +122,7 @@ def get_empty(x: Union[List, Dict]) -> Union[List, Dict, None]:
                 empty = get_empty(i)
                 if empty is not None:
                     empty_list.append(empty)
-                return empty_list
+            return empty_list
         case dict():
             empty_dict = {}
             for key, value in x.items():

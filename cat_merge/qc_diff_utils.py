@@ -79,7 +79,10 @@ def diff_lists(a: Union[List, None], b: Union[List, None]) -> List:
 
 def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
     diff: Union[str, List]
-    if a == b:
+    if a is None and b is None:
+        message = "diff_str: both values to compare are None, this shouldn't happen."
+        raise ValueError(message)
+    elif a == b:
         diff = a
     elif a is None:
         diff = "-" + b

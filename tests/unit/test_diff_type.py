@@ -1,17 +1,16 @@
 import pytest
 from cat_merge.qc_diff_utils import diff_type
-from cat_merge.qc_diff_utils import CompareBothNoneError, CompareDifferentTypesError, TypeNotImplementedError
 from typing import List, Dict
 
 
 def test_diff_type_exceptions():
-    with pytest.raises(CompareBothNoneError) as e_info:
+    with pytest.raises(ValueError) as e_info:
         diff_type(None, None)
 
-    with pytest.raises(CompareDifferentTypesError) as e_info:
+    with pytest.raises(TypeError) as e_info:
         diff_type(str(), int())
 
-    with pytest.raises(TypeNotImplementedError) as e_info:
+    with pytest.raises(NotImplementedError) as e_info:
         diff_type(set(), None)
 
 

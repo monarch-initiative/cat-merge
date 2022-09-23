@@ -38,9 +38,12 @@ def diff_elem(a_nodes: Union[List, None], b_nodes: Union[List, None]):
 
 
 def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) -> Union[List, str, int, None]:
-    if type(a) != type(b) and not (a is None or b is None):
-        msg = "diff_type: operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
-        raise TypeError(msg)
+    if type(a) != type(b) and a is not None and b is not None:
+        message = "diff_type: operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
+        raise TypeError(message)
+    elif a is None and b is None:
+        message = "diff_type: both values to compare are None, this shouldn't happen."
+        raise ValueError(message)
 
     diff: Union[Dict, List, int, str, None]
     case_type = a if a is not None else b
@@ -57,8 +60,8 @@ def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) ->
         case None:
             diff = None
         case _:
-            msg = "diff_type: type of operands not implemented: " + str(type(case_type))
-            raise NotImplementedError(msg)
+            message = "diff_type: type of operands not implemented: " + str(type(case_type))
+            raise NotImplementedError(message)
 
     return diff
 
@@ -135,8 +138,8 @@ def get_empty(x: Union[List, Dict, int, str]) -> Union[List, Dict, None]:
             return None
         case _:
             # We don't know how to deal with anything else, i.e. sets or tuples.
-            msg = "get_empty: Type not implemented: " + str(type(x))
-            raise NotImplementedError(msg)
+            message = "get_empty: Type not implemented: " + str(type(x))
+            raise NotImplementedError(message)
 
 
 def get_source_names(sources: Union[List[Dict], None]) -> List:
@@ -145,7 +148,5 @@ def get_source_names(sources: Union[List[Dict], None]) -> List:
 
     names = list()
     for s in sources:
-        # name = s.get("name")
-        # names[name] = s
         names.append(s.get("name"))
     return names

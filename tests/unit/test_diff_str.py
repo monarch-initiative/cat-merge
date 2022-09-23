@@ -1,5 +1,11 @@
 import pytest
 from cat_merge.qc_diff_utils import diff_str
+from cat_merge.qc_diff_utils import CompareBothNoneError
+
+
+def test_diff_str_exception():
+    with pytest.raises(CompareBothNoneError):
+        diff_str(None, None)
 
 
 @pytest.fixture

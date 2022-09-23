@@ -1,10 +1,9 @@
 import pytest
 from cat_merge.qc_diff_utils import diff_int
-from cat_merge.qc_diff_utils import CompareBothNoneError
 
 
 def test_diff_int_exception():
-    with pytest.raises(CompareBothNoneError):
+    with pytest.raises(ValueError):
         diff_int(None, None)
 
 

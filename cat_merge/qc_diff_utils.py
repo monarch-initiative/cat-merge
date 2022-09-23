@@ -14,7 +14,7 @@ class CompareDifferentTypesError(TypeError):
     """
 
 
-class TypeNotImplementedError(TypeError):
+class TypeNotImplementedError(NotImplementedError):
     """
     Raised to signal an attempt to compare an object from an unimplemented Type
     """

@@ -1,6 +1,25 @@
 from typing import Dict, List, Union
 
 
+# Exceptions raised by qc_diff_utils
+class CompareBothNoneError(ValueError):
+    """
+    Raised to signal an attempt to compare when both objects are None
+    """
+
+
+class CompareDifferentTypesError(TypeError):
+    """
+    Raised to signal an attempt to compare objects of different types
+    """
+
+
+class TypeNotImplementedError(TypeError):
+    """
+    Raised to signal an attempt to compare an object from an unimplemented Type
+    """
+
+
 def diff_yaml(a_yaml: Dict, b_yaml: Dict) -> Dict:
     yaml_qc_compare = {}
     for key in dict.fromkeys(list(a_yaml.keys()) + list(b_yaml.keys())):
@@ -40,10 +59,10 @@ def diff_elem(a_nodes: Union[List, None], b_nodes: Union[List, None]):
 def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) -> Union[List, str, int, None]:
     if type(a) != type(b) and a is not None and b is not None:
         message = "diff_type: operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
-        raise TypeError(message)
+        raise CompareDifferentTypesError(message)
     elif a is None and b is None:
         message = "diff_type: both values to compare are None, this shouldn't happen."
-        raise ValueError(message)
+        raise CompareBothNoneError(message)
 
     diff: Union[Dict, List, int, str, None]
     case_type = a if a is not None else b
@@ -61,7 +80,7 @@ def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) ->
             diff = None
         case _:
             message = "diff_type: type of operands not implemented: " + str(type(case_type))
-            raise NotImplementedError(message)
+            raise TypeNotImplementedError(message)
 
     return diff
 
@@ -84,7 +103,7 @@ def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
     diff: Union[str, List]
     if a is None and b is None:
         message = "diff_str: both values to compare are None, this shouldn't happen."
-        raise ValueError(message)
+        raise CompareBothNoneError(message)
     elif a == b:
         diff = a
     elif a is None:
@@ -100,7 +119,7 @@ def diff_int(a: Union[int, None], b: Union[int, None]) -> Union[int, str, Dict]:
     diff: Union[int, str, Dict]
     if a is None and b is None:
         message = "diff_int: both values to compare are None, this shouldn't happen."
-        raise ValueError(message)
+        raise CompareBothNoneError(message)
     elif a == b:
         diff = a
     elif a is None:
@@ -139,7 +158,7 @@ def get_empty(x: Union[List, Dict, int, str]) -> Union[List, Dict, None]:
         case _:
             # We don't know how to deal with anything else, i.e. sets or tuples.
             message = "get_empty: Type not implemented: " + str(type(x))
-            raise NotImplementedError(message)
+            raise TypeNotImplementedError(message)
 
 
 def get_source_names(sources: Union[List[Dict], None]) -> List:

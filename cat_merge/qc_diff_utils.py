@@ -1,4 +1,28 @@
-from typing import Dict, List, Union
+from functools import wraps
+from typing import Any, Dict, List, Union
+
+
+def diff_args(f):
+    @wraps(f)
+    def check_diff_args(*args, **kwargs):
+        a = kwargs.get("a") if len(args) < 1 else args[0]
+        b = kwargs.get("b") if len(args) < 2 else args[1]
+        if type(a) != type(b) and not either_none(a, b):
+            message = f.__name__ + ": operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
+            raise TypeError(message)
+        elif both_none(a, b):
+            message = f.__name__ + ": both values to compare are None, this shouldn't happen."
+            raise ValueError(message)
+        return f(*args, **kwargs)
+    return check_diff_args
+
+
+def both_none(a: Any, b: Any):
+    return a is None and b is None
+
+
+def either_none(a: Any, b: Any):
+    return a is None or b is None
 
 
 def diff_yaml(a_yaml: Dict, b_yaml: Dict) -> Dict:
@@ -66,7 +90,11 @@ def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) ->
     return diff
 
 
+@diff_args
 def diff_lists(a: Union[List, None], b: Union[List, None]) -> List:
+    if type(a) is list and type(b) is list and len(a) > 0 and len(b) > 0 and isinstance(a[0], type(b[0])):
+        message = "diff_lists: list elements have different types. a: " + str(type(a[0])) + " b: " + str(type(b[0]))
+        raise TypeError(message)
     diff = []
     a = [] if a is None else a
     b = [] if b is None else b

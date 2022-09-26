@@ -1,30 +1,32 @@
 from functools import wraps
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Union
+# from typing import Any, Dict, List, Union
 
 
-def diff_args(f):
+def validate_diff_args(f):
     @wraps(f)
     def check_diff_args(*args, **kwargs):
         a = kwargs.get("a") if len(args) < 1 else args[0]
         b = kwargs.get("b") if len(args) < 2 else args[1]
-        if type(a) != type(b) and not either_none(a, b):
+        if type(a) != type(b) and not (a is None or b is None):
             message = f.__name__ + ": operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
             raise TypeError(message)
-        elif both_none(a, b):
+        elif a is None and b is None:
             message = f.__name__ + ": both values to compare are None, this shouldn't happen."
             raise ValueError(message)
         return f(*args, **kwargs)
     return check_diff_args
 
 
-def both_none(a: Any, b: Any):
-    return a is None and b is None
+# def both_none(a: Any, b: Any):
+#     return a is None and b is None
 
 
-def either_none(a: Any, b: Any):
-    return a is None or b is None
+# def either_none(a: Any, b: Any):
+#     return a is None or b is None
 
 
+@validate_diff_args
 def diff_yaml(a_yaml: Dict, b_yaml: Dict) -> Dict:
     yaml_qc_compare = {}
     for key in dict.fromkeys(list(a_yaml.keys()) + list(b_yaml.keys())):
@@ -33,50 +35,59 @@ def diff_yaml(a_yaml: Dict, b_yaml: Dict) -> Dict:
     return yaml_qc_compare
 
 
-def diff_elem(a_nodes: Union[List, None], b_nodes: Union[List, None]):
+@validate_diff_args
+def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None]):
+    # TODO detect if List[Dict] and only pull source names if True
+    # TODO implement on Dict(not List[Dict]) elem
     node_compare = {}
     missing = ""
 
-    a_names = get_source_names(a_nodes)
-    b_names = get_source_names(b_nodes)
-    all_names = dict.fromkeys(a_names + b_names)
+    # a_names = get_source_names(a)
+    # b_names = get_source_names(b)
+    a_dict = sources_dict(a)
+    b_dict = sources_dict(b)
+    all_keys = dict.fromkeys(list(a_dict.keys()) + list(b_dict.keys()))
 
-    for name in all_names:
-        if name not in a_names:
-            b_source = b_nodes[b_names.index(name)]
-            a_source = get_empty(b_source)
+    for outer_key in all_keys:
+        if outer_key not in a_dict.keys():
+            b_source = b[b_dict.get(outer_key)]
+            a_source = get_empty(b_dict.get(outer_key))
             missing = "-"
-        elif name not in b_names:
-            a_source = a_nodes[a_names.index(name)]
-            b_source = get_empty(a_source)
+        elif outer_key not in b_dict.keys:
+            a_source = a[a_dict.get(outer_key)]
+            b_source = get_empty(a_dict.get(outer_key))
             missing = "+"
         else:
-            b_source = b_nodes[b_names.index(name)]
-            a_source = a_nodes[a_names.index(name)]
+            b_source = b[b_dict.get(outer_key)]
+            a_source = a[a_dict.get(outer_key)]
 
         source = {}
-        for key in a_source.keys():
-            source[missing + key] = diff_type(a_source.get(key), b_source.get(key))
-        node_compare[name] = source
+        for inner_key in a_source.keys():
+            source[missing + inner_key] = diff_type(a_source.get(inner_key), b_source.get(inner_key))
+        node_compare[outer_key] = source
     return node_compare
 
 
+@validate_diff_args
 def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) -> Union[List, str, int, None]:
-    if type(a) != type(b) and a is not None and b is not None:
-        message = "diff_type: operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
-        raise TypeError(message)
-    elif a is None and b is None:
-        message = "diff_type: both values to compare are None, this shouldn't happen."
-        raise ValueError(message)
+    # if type(a) != type(b) and a is not None and b is not None:
+    #     message = "diff_type: operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
+    #     raise TypeError(message)
+    # elif a is None and b is None:
+    #     message = "diff_type: both values to compare are None, this shouldn't happen."
+    #     raise ValueError(message)
 
     diff: Union[Dict, List, int, str, None]
     case_type = a if a is not None else b
     match case_type:
+        case dict():
+            # TODO implement diff on dict -- Done
+            diff = diff_dict(a, b)
         case list():
             if len(case_type) > 0 and type(case_type[0]) is dict:
                 diff = diff_elem(a, b)
             else:
-                diff = diff_lists(a, b)
+                diff = diff_list(a, b)
         case str():
             diff = diff_str(a, b)
         case int():
@@ -90,30 +101,48 @@ def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) ->
     return diff
 
 
-@diff_args
-def diff_lists(a: Union[List, None], b: Union[List, None]) -> List:
-    if type(a) is list and type(b) is list and len(a) > 0 and len(b) > 0 and isinstance(a[0], type(b[0])):
-        message = "diff_lists: list elements have different types. a: " + str(type(a[0])) + " b: " + str(type(b[0]))
-        raise TypeError(message)
-    diff = []
-    a = [] if a is None else a
-    b = [] if b is None else b
-    for key in dict.fromkeys(a + b):
-        if key in a and key in b:
-            diff.append(key)
-        elif key not in b:
-            diff.append("+" + key)
-        elif key not in a:
-            diff.append("-" + key)
+@validate_diff_args
+def diff_dict(a: Union[Dict, None], b: Union[Dict, None]) -> Dict:
+    diff = {}
+    a = {} if a is None else a
+    b = {} if b is None else b
+
+    for key in dict.fromkeys(list(a.keys()), list(b.keys())):
+        diff[key] = diff_type(a.get(key), b.get(key))
+
     return diff
 
 
+@validate_diff_args
+def diff_list(a: Union[List, None], b: Union[List, None]) -> List:
+    # if type(a) is list and type(b) is list and len(a) > 0 and len(b) > 0 and isinstance(a[0], type(b[0])):
+    #     message = "diff_lists: list elements have different types. a: " + str(type(a[0])) + " b: " + str(type(b[0]))
+    #     raise TypeError(message)
+    diff = []
+    a = [] if a is None else a
+    b = [] if b is None else b
+    a_as_keys = dict.fromkeys(a)
+    b_as_keys = dict.fromkeys(b)
+
+    for key in dict.fromkeys(a + b):
+        diff.append(diff_type(a_as_keys.get(key), b_as_keys.get(key)))
+        # if key in a and key in b:
+        #     diff.append(key)
+        # elif key not in b:
+        #     diff.append("+" + key)
+        # elif key not in a:
+        #     diff.append("-" + key)
+    return diff
+
+
+@validate_diff_args
 def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
     diff: Union[str, List]
-    if a is None and b is None:
-        message = "diff_str: both values to compare are None, this shouldn't happen."
-        raise ValueError(message)
-    elif a == b:
+    # if a is None and b is None:
+    #     message = "diff_str: both values to compare are None, this shouldn't happen."
+    #     raise ValueError(message)
+    # elif a == b:
+    if a == b:
         diff = a
     elif a is None:
         diff = "-" + b
@@ -124,12 +153,14 @@ def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
     return diff
 
 
+@validate_diff_args
 def diff_int(a: Union[int, None], b: Union[int, None]) -> Union[int, str, Dict]:
     diff: Union[int, str, Dict]
-    if a is None and b is None:
-        message = "diff_int: both values to compare are None, this shouldn't happen."
-        raise ValueError(message)
-    elif a == b:
+    # if a is None and b is None:
+    #     message = "diff_int: both values to compare are None, this shouldn't happen."
+    #     raise ValueError(message)
+    # elif a == b:
+    if a == b:
         diff = a
     elif a is None:
         diff = "-" + str(b)
@@ -170,11 +201,31 @@ def get_empty(x: Union[List, Dict, int, str]) -> Union[List, Dict, None]:
             raise NotImplementedError(message)
 
 
-def get_source_names(sources: Union[List[Dict], None]) -> List:
-    if sources is None:
-        return list()
+def sources_dict(a: Union[Dict, List[Dict]]) -> Dict:
+    if type(a) is Dict:
+        return a
 
-    names = list()
-    for s in sources:
-        names.append(s.get("name"))
-    return names
+    a_dict = dict()
+    if a is None:
+        pass
+    elif type(a) is list:
+        for i in a:
+            a_dict[i.get("name")] = i
+    else:
+        # We shouldn't ever reach here, wrong type given.
+        message = "source_dict: Wrong Type; type should be Dict, List or None."
+        raise TypeError(message)
+
+    return a_dict
+
+
+# def get_source_names(sources: Union[Dict, List[Dict], None]) -> List:
+#     if sources is None:
+#         return list()
+#     elif type(sources) is dict:
+#         return list(sources.keys())
+#
+#     names = list()
+#     for s in sources:
+#         names.append(s.get("name"))
+#     return names

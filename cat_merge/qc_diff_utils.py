@@ -1,6 +1,5 @@
 from functools import wraps
 from typing import Dict, List, Union
-# from typing import Any, Dict, List, Union
 
 
 def validate_diff_args(f):
@@ -16,14 +15,6 @@ def validate_diff_args(f):
             raise ValueError(message)
         return f(*args, **kwargs)
     return check_diff_args
-
-
-# def both_none(a: Any, b: Any):
-#     return a is None and b is None
-
-
-# def either_none(a: Any, b: Any):
-#     return a is None or b is None
 
 
 @validate_diff_args
@@ -42,8 +33,6 @@ def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None]):
     node_compare = {}
     missing = ""
 
-    # a_names = get_source_names(a)
-    # b_names = get_source_names(b)
     a_dict = sources_dict(a)
     b_dict = sources_dict(b)
     all_keys = dict.fromkeys(list(a_dict.keys()) + list(b_dict.keys()))
@@ -70,12 +59,6 @@ def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None]):
 
 @validate_diff_args
 def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) -> Union[List, str, int, None]:
-    # if type(a) != type(b) and a is not None and b is not None:
-    #     message = "diff_type: operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
-    #     raise TypeError(message)
-    # elif a is None and b is None:
-    #     message = "diff_type: both values to compare are None, this shouldn't happen."
-    #     raise ValueError(message)
 
     diff: Union[Dict, List, int, str, None]
     case_type = a if a is not None else b
@@ -115,9 +98,6 @@ def diff_dict(a: Union[Dict, None], b: Union[Dict, None]) -> Dict:
 
 @validate_diff_args
 def diff_list(a: Union[List, None], b: Union[List, None]) -> List:
-    # if type(a) is list and type(b) is list and len(a) > 0 and len(b) > 0 and isinstance(a[0], type(b[0])):
-    #     message = "diff_lists: list elements have different types. a: " + str(type(a[0])) + " b: " + str(type(b[0]))
-    #     raise TypeError(message)
     diff = []
     a = [] if a is None else a
     b = [] if b is None else b
@@ -126,22 +106,12 @@ def diff_list(a: Union[List, None], b: Union[List, None]) -> List:
 
     for key in dict.fromkeys(a + b):
         diff.append(diff_type(a_as_keys.get(key), b_as_keys.get(key)))
-        # if key in a and key in b:
-        #     diff.append(key)
-        # elif key not in b:
-        #     diff.append("+" + key)
-        # elif key not in a:
-        #     diff.append("-" + key)
     return diff
 
 
 @validate_diff_args
 def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
     diff: Union[str, List]
-    # if a is None and b is None:
-    #     message = "diff_str: both values to compare are None, this shouldn't happen."
-    #     raise ValueError(message)
-    # elif a == b:
     if a == b:
         diff = a
     elif a is None:
@@ -156,10 +126,6 @@ def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
 @validate_diff_args
 def diff_int(a: Union[int, None], b: Union[int, None]) -> Union[int, str, Dict]:
     diff: Union[int, str, Dict]
-    # if a is None and b is None:
-    #     message = "diff_int: both values to compare are None, this shouldn't happen."
-    #     raise ValueError(message)
-    # elif a == b:
     if a == b:
         diff = a
     elif a is None:
@@ -217,15 +183,3 @@ def sources_dict(a: Union[Dict, List[Dict]]) -> Dict:
         raise TypeError(message)
 
     return a_dict
-
-
-# def get_source_names(sources: Union[Dict, List[Dict], None]) -> List:
-#     if sources is None:
-#         return list()
-#     elif type(sources) is dict:
-#         return list(sources.keys())
-#
-#     names = list()
-#     for s in sources:
-#         names.append(s.get("name"))
-#     return names

@@ -1,10 +1,11 @@
+import inspect
 from functools import wraps
 from typing import Dict, List, Union
 
 
 def validate_diff_args(f):
     @wraps(f)
-    def check_diff_args(*args, **kwargs):
+    def wrapped_diff(*args, **kwargs):
         a = kwargs.get("a") if len(args) < 1 else args[0]
         b = kwargs.get("b") if len(args) < 2 else args[1]
         if type(a) != type(b) and not (a is None or b is None):
@@ -14,7 +15,7 @@ def validate_diff_args(f):
             message = f.__name__ + ": both values to compare are None, this shouldn't happen."
             raise ValueError(message)
         return f(*args, **kwargs)
-    return check_diff_args
+    return wrapped_diff
 
 
 @validate_diff_args
@@ -178,7 +179,7 @@ def sources_dict(a: Union[Dict, List[Dict]]) -> Dict:
             for i in a:
                 if i.get("name") is None:
                     # We don't know how to handle a List[Dict] that doesn't have names
-                    message: "sources_dict: List[Dict] does not have a name key, aborting"
+                    message = "sources_dict: List[Dict] does not have a name key, aborting"
                     raise NotImplementedError(message)
                 a_dict[i.get("name")] = i
         case _:

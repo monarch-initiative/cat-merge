@@ -168,18 +168,22 @@ def get_empty(x: Union[List, Dict, int, str]) -> Union[List, Dict, None]:
 
 
 def sources_dict(a: Union[Dict, List[Dict]]) -> Dict:
-    if type(a) is Dict:
-        return a
-
-    a_dict = dict()
-    if a is None:
-        pass
-    elif type(a) is list:
-        for i in a:
-            a_dict[i.get("name")] = i
-    else:
-        # We shouldn't ever reach here, wrong type given.
-        message = "source_dict: Wrong Type; type should be Dict, List or None."
-        raise TypeError(message)
+    a_dict = {}
+    match a:
+        case dict():
+            a_dict = a
+        case None:
+            pass
+        case list():
+            for i in a:
+                if i.get("name") is None:
+                    # We don't know how to handle a List[Dict] that doesn't have names
+                    message: "sources_dict: List[Dict] does not have a name key, aborting"
+                    raise NotImplementedError(message)
+                a_dict[i.get("name")] = i
+        case _:
+            # We shouldn't ever reach here, wrong type given.
+            message = "source_dict: Wrong Type; type should be Dict, List or None."
+            raise TypeError(message)
 
     return a_dict

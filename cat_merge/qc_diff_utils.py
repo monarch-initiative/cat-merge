@@ -36,20 +36,21 @@ def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None]):
 
     a_dict = sources_dict(a)
     b_dict = sources_dict(b)
+
     all_keys = dict.fromkeys(list(a_dict.keys()) + list(b_dict.keys()))
 
     for outer_key in all_keys:
         if outer_key not in a_dict.keys():
-            b_source = b[b_dict.get(outer_key)]
+            b_source = b_dict.get(outer_key)
             a_source = get_empty(b_dict.get(outer_key))
             missing = "-"
-        elif outer_key not in b_dict.keys:
-            a_source = a[a_dict.get(outer_key)]
+        elif outer_key not in b_dict.keys():
+            a_source = a_dict.get(outer_key)
             b_source = get_empty(a_dict.get(outer_key))
             missing = "+"
         else:
-            b_source = b[b_dict.get(outer_key)]
-            a_source = a[a_dict.get(outer_key)]
+            b_source = b_dict.get(outer_key)
+            a_source = a_dict.get(outer_key)
 
         source = {}
         for inner_key in a_source.keys():
@@ -102,8 +103,8 @@ def diff_list(a: Union[List, None], b: Union[List, None]) -> List:
     diff = []
     a = [] if a is None else a
     b = [] if b is None else b
-    a_as_keys = dict.fromkeys(a)
-    b_as_keys = dict.fromkeys(b)
+    a_as_keys = dict(zip(a, a))
+    b_as_keys = dict(zip(b, b))
 
     for key in dict.fromkeys(a + b):
         diff.append(diff_type(a_as_keys.get(key), b_as_keys.get(key)))
@@ -155,7 +156,9 @@ def get_empty(x: Union[List, Dict, int, str]) -> Union[List, Dict, None]:
         case dict():
             empty_dict = {}
             for key, value in x.items():
-                if value is None:
+                if key == "name" or key == "uri":
+                    empty_dict[key] = value
+                elif value is None:
                     empty_dict[key] = None
                 else:
                     empty_dict[key] = get_empty(value)
@@ -177,11 +180,14 @@ def sources_dict(a: Union[Dict, List[Dict]]) -> Dict:
             pass
         case list():
             for i in a:
-                if i.get("name") is None:
-                    # We don't know how to handle a List[Dict] that doesn't have names
+                if i.get("name") is not None:
+                    a_dict[i.get("name")] = i
+                elif i.get("uri") is not None:
+                    a_dict[i.get("uri")] = i
+                else:
+                    # We don't know how to handle a List[Dict] that doesn't have name or uri
                     message = "sources_dict: List[Dict] does not have a name key, aborting"
                     raise NotImplementedError(message)
-                a_dict[i.get("name")] = i
         case _:
             # We shouldn't ever reach here, wrong type given.
             message = "source_dict: Wrong Type; type should be Dict, List or None."

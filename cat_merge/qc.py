@@ -19,17 +19,16 @@ def qc_report(archive_path: str,
         yaml.dump(report, report_file)
 
 
-def qc_diff(qc_file_a: str, qc_file_b: str, output_path: str = None):
+def qc_diff(qc_file_a: str, qc_file_b: str, output_path: str = None, show_all: bool = "False"):
     with open(qc_file_a, "r") as yml_file:
         qc_yaml_a = yaml.safe_load(yml_file)
     with open(qc_file_b, "r") as yml_file:
         qc_yaml_b = yaml.safe_load(yml_file)
 
-    report = diff_yaml(qc_yaml_a, qc_yaml_b)
+    report = diff_yaml(qc_yaml_a, qc_yaml_b, show_all)
 
     if output_path is not None:
         with open(output_path, "w") as report_file:
             yaml.dump(report, report_file)
 
     return report
-

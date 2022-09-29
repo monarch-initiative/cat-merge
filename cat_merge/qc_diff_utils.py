@@ -1,4 +1,3 @@
-import inspect
 from functools import wraps
 from typing import Dict, List, Union
 
@@ -8,7 +7,12 @@ def validate_diff_args(f):
     def wrapped_diff(*args, **kwargs):
         a = kwargs.get("a") if len(args) < 1 else args[0]
         b = kwargs.get("b") if len(args) < 2 else args[1]
-        if type(a) != type(b) and not (a is None or b is None):
+        flags = kwargs.get("flags") if len(args) < 3 else args[2]
+
+        if all(k in flags for k in ("show_all", "match")):
+            message = f.__name__ + ": flags missing: flags dict must contain 'all' and 'match'"
+            raise KeyError(message)
+        elif type(a) != type(b) and not (a is None or b is None):
             message = f.__name__ + ": operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
             raise TypeError(message)
         elif a is None and b is None:
@@ -19,18 +23,21 @@ def validate_diff_args(f):
 
 
 @validate_diff_args
-def diff_yaml(a_yaml: Dict, b_yaml: Dict) -> Dict:
+def diff_yaml(a_yaml: Dict, b_yaml: Dict, show_all: bool) -> Dict:
+    flags = {'show_all': show_all, 'change': False}
+
     yaml_qc_compare = {}
     for key in dict.fromkeys(list(a_yaml.keys()) + list(b_yaml.keys())):
-        yaml_qc_compare[key] = diff_elem(a_yaml.get(key), b_yaml.get(key))
+        diff_value = diff_elem(a_yaml.get(key), b_yaml.get(key), flags)
+        if flags['change'] or flags['show_all']:
+            yaml_qc_compare[key] = diff_value
+        flags['change'] = False
 
     return yaml_qc_compare
 
 
 @validate_diff_args
-def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None]):
-    # TODO detect if List[Dict] and only pull source names if True
-    # TODO implement on Dict(not List[Dict]) elem
+def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None], flags: Dict):
     node_compare = {}
     missing = ""
 
@@ -39,6 +46,7 @@ def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None]):
 
     all_keys = dict.fromkeys(list(a_dict.keys()) + list(b_dict.keys()))
 
+    change = False
     for outer_key in all_keys:
         if outer_key not in a_dict.keys():
             b_source = b_dict.get(outer_key)
@@ -54,29 +62,39 @@ def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None]):
 
         source = {}
         for inner_key in a_source.keys():
-            source[missing + inner_key] = diff_type(a_source.get(inner_key), b_source.get(inner_key))
-        node_compare[outer_key] = source
+            diff_value = diff_type(a_source.get(inner_key), b_source.get(inner_key), flags)
+            if flags["change"] or flags["show_all"]:
+                source[missing + inner_key] = diff_value
+            change = any([change, flags["change"]])
+            flags["change"] = False
+
+        node_compare[missing + outer_key] = source
+
+    flags['change'] = change
     return node_compare
 
 
 @validate_diff_args
-def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) -> Union[List, str, int, None]:
+def diff_type(
+        a: Union[List, Dict, str, int, None],
+        b: Union[List, Dict, str, int, None],
+        flags: Dict
+) -> Union[List, str, int, None]:
 
     diff: Union[Dict, List, int, str, None]
     case_type = a if a is not None else b
     match case_type:
         case dict():
-            # TODO implement diff on dict -- Done
-            diff = diff_dict(a, b)
+            diff = diff_dict(a, b, flags)
         case list():
             if len(case_type) > 0 and type(case_type[0]) is dict:
-                diff = diff_elem(a, b)
+                diff = diff_elem(a, b, flags)
             else:
-                diff = diff_list(a, b)
+                diff = diff_list(a, b, flags)
         case str():
-            diff = diff_str(a, b)
+            diff = diff_str(a, b, flags)
         case int():
-            diff = diff_int(a, b)
+            diff = diff_int(a, b, flags)
         case None:
             diff = None
         case _:
@@ -87,34 +105,54 @@ def diff_type(a: Union[List, str, int, None], b: Union[List, str, int, None]) ->
 
 
 @validate_diff_args
-def diff_dict(a: Union[Dict, None], b: Union[Dict, None]) -> Dict:
+def diff_dict(a: Union[Dict, None], b: Union[Dict, None], flags) -> Dict:
     diff = {}
     a = {} if a is None else a
     b = {} if b is None else b
+    missing = ""
+    change = False
 
     for key in dict.fromkeys(list(a.keys()), list(b.keys())):
-        diff[key] = diff_type(a.get(key), b.get(key))
+        if key not in a.keys():
+            missing = "-"
+        elif key not in b.keys():
+            missing = "+"
+        diff_value = diff_type(a.get(key), b.get(key), flags)
+        if flags["change"] or flags["show_all"]:
+            diff[missing + key] = diff_value
+        change = any([change, flags["change"]])
+        flags["change"] = False
 
+    flags["change"] = change
     return diff
 
 
 @validate_diff_args
-def diff_list(a: Union[List, None], b: Union[List, None]) -> List:
+def diff_list(a: Union[List, None], b: Union[List, None], flags: Dict) -> List:
     diff = []
     a = [] if a is None else a
     b = [] if b is None else b
     a_as_keys = dict(zip(a, a))
     b_as_keys = dict(zip(b, b))
 
+    change = False
     for key in dict.fromkeys(a + b):
-        diff.append(diff_type(a_as_keys.get(key), b_as_keys.get(key)))
+        diff_value = diff_type(a_as_keys.get(key), b_as_keys.get(key), flags)
+        if flags["change"] or flags["show_all"]:
+            diff.append(diff_value)
+        change = any([change, flags["change"]])
+        flags["change"] = False
+
+    flags["change"] = change
     return diff
 
 
 @validate_diff_args
-def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
+def diff_str(a: Union[str, None], b: Union[str, None], flags: Dict) -> Union[str, List]:
+    flags["change"] = True
     diff: Union[str, List]
     if a == b:
+        flags["change"] = False
         diff = a
     elif a is None:
         diff = "-" + b
@@ -126,9 +164,11 @@ def diff_str(a: Union[str, None], b: Union[str, None]) -> Union[str, List]:
 
 
 @validate_diff_args
-def diff_int(a: Union[int, None], b: Union[int, None]) -> Union[int, str, Dict]:
+def diff_int(a: Union[int, None], b: Union[int, None], flags: Dict) -> Union[int, str, Dict]:
+    flags["change"] = True
     diff: Union[int, str, Dict]
     if a == b:
+        flags["change"] = False
         diff = a
     elif a is None:
         diff = "-" + str(b)

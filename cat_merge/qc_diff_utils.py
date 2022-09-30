@@ -9,7 +9,7 @@ def validate_diff_args(f):
         b = kwargs.get("b") if len(args) < 2 else args[1]
         # flags = kwargs.get("flags") if len(args) < 3 else args[2]
 
-        # if all(k in flags for k in ("show_all", "match")):
+        # if all(k in flags for k in ("show_all", "change")):
         #     message = f.__name__ + ": flags missing: flags dict must contain 'all' and 'match'"
         #     raise KeyError(message)
 
@@ -20,7 +20,7 @@ def validate_diff_args(f):
         if a is None and b is None:
             message = f.__name__ + ": both values to compare are None, this shouldn't happen."
             raise ValueError(message)
-        
+
         return f(*args, **kwargs)
     return wrapped_diff
 
@@ -108,7 +108,7 @@ def diff_type(
 
 
 @validate_diff_args
-def diff_dict(a: Union[Dict, None], b: Union[Dict, None], flags) -> Dict:
+def diff_dict(a: Union[Dict, None], b: Union[Dict, None], flags: Dict) -> Dict:
     diff = {}
     a = {} if a is None else a
     b = {} if b is None else b
@@ -151,12 +151,15 @@ def diff_list(a: Union[List, None], b: Union[List, None], flags: Dict) -> List:
 
 
 @validate_diff_args
-def diff_str(a: Union[str, None], b: Union[str, None], flags: Dict) -> Union[str, List]:
+def diff_str(a: Union[str, None], b: Union[str, None], flags: Dict) -> Union[str, List, None]:
     flags["change"] = True
-    diff: Union[str, List]
+    diff: Union[str, List, None]
     if a == b:
         flags["change"] = False
-        diff = a
+        if flags["show_all"]:
+            diff = a
+        else:
+            diff = None
     elif a is None:
         diff = "-" + b
     elif b is None:
@@ -167,12 +170,15 @@ def diff_str(a: Union[str, None], b: Union[str, None], flags: Dict) -> Union[str
 
 
 @validate_diff_args
-def diff_int(a: Union[int, None], b: Union[int, None], flags: Dict) -> Union[int, str, Dict]:
+def diff_int(a: Union[int, None], b: Union[int, None], flags: Dict) -> Union[int, str, Dict, None]:
     flags["change"] = True
-    diff: Union[int, str, Dict]
+    diff: Union[int, str, Dict, None]
     if a == b:
         flags["change"] = False
-        diff = a
+        if flags["show_all"]:
+            diff = a
+        else:
+            diff = None
     elif a is None:
         diff = "-" + str(b)
     elif b is None:

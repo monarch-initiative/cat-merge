@@ -9,7 +9,10 @@ def str1() -> str:
 
 
 def test_diff_str_match(str1, flags):
-    assert diff_str(str1, str1, flags) == "source1.tsv"
+    if flags["show_all"]:
+        assert diff_str(str1, str1, flags) == "source1.tsv"
+    else:
+        assert diff_str(str1, str1, flags) is None
 
 
 def test_diff_str_a_none(str1, flags):

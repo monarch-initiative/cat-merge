@@ -7,22 +7,25 @@ def validate_diff_args(f):
     def wrapped_diff(*args, **kwargs):
         a = kwargs.get("a") if len(args) < 1 else args[0]
         b = kwargs.get("b") if len(args) < 2 else args[1]
-        flags = kwargs.get("flags") if len(args) < 3 else args[2]
+        # flags = kwargs.get("flags") if len(args) < 3 else args[2]
 
-        if all(k in flags for k in ("show_all", "match")):
-            message = f.__name__ + ": flags missing: flags dict must contain 'all' and 'match'"
-            raise KeyError(message)
-        elif type(a) != type(b) and not (a is None or b is None):
+        # if all(k in flags for k in ("show_all", "match")):
+        #     message = f.__name__ + ": flags missing: flags dict must contain 'all' and 'match'"
+        #     raise KeyError(message)
+
+        if type(a) != type(b) and not (a is None or b is None):
             message = f.__name__ + ": operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
             raise TypeError(message)
-        elif a is None and b is None:
+
+        if a is None and b is None:
             message = f.__name__ + ": both values to compare are None, this shouldn't happen."
             raise ValueError(message)
+        
         return f(*args, **kwargs)
     return wrapped_diff
 
 
-@validate_diff_args
+# @validate_diff_args
 def diff_yaml(a_yaml: Dict, b_yaml: Dict, show_all: bool) -> Dict:
     flags = {'show_all': show_all, 'change': False}
 

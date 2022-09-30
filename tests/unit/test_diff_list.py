@@ -11,10 +11,12 @@ def list1() -> List:
 
 def test_diff_list_a_none(list1, flags):
     assert diff_list(None, list1, flags) == ['-item1', '-item7', '-item2']
+    assert flags["change"] is True
 
 
 def test_diff_lists_b_none(list1, flags):
     assert diff_list(list1, None, flags) == ['+item1', '+item7', '+item2']
+    assert flags["change"] is True
 
 
 @pytest.fixture
@@ -27,6 +29,7 @@ def test_diff_lists_match(list1, list1_copy, flags):
         assert diff_list(list1, list1_copy, flags) == ['item1', 'item7', 'item2']
     else:
         assert diff_list(list1, list1_copy, flags) == list()
+    assert flags["change"] is False
 
 
 @pytest.fixture
@@ -36,10 +39,12 @@ def empty_list() -> List:
 
 def test_diff_lists_a_empty(empty_list, list1, flags):
     assert diff_list(empty_list, list1, flags) == ['-item1', '-item7', '-item2']
+    assert flags["change"] is True
 
 
 def test_diff_lists_b_empty(list1, empty_list, flags):
     assert diff_list(list1, empty_list, flags) == ['+item1', '+item7', '+item2']
+    assert flags["change"] is True
 
 
 @pytest.fixture
@@ -52,3 +57,4 @@ def test_diff_list_no_match(list1, list2, flags):
         assert diff_list(list1, list2, flags) == ['item1', 'item7', '+item2', '-item3']
     else:
         assert diff_list(list1, list2, flags) == ['+item2', '-item3']
+    assert flags["change"] is True

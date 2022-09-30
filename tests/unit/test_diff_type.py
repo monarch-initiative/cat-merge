@@ -15,7 +15,11 @@ def str2() -> str:
 
 
 def test_diff_type_str(str1, str2, flags):
-    assert diff_type(str1, str1, flags) == "str1"
+    if flags["show_all"]:
+        assert diff_type(str1, str1, flags) == "str1"
+    else:
+        assert diff_type(str1, str1, flags) is None
+
     assert diff_type(None, str1, flags) == "-str1"
     assert diff_type(str1, None, flags) == "+str1"
     assert diff_type(str1, str2, flags) == ["+str1", "-str2"]
@@ -32,7 +36,11 @@ def int2() -> int:
 
 
 def test_diff_type_int(int1, int2, flags):
-    assert diff_type(int1, int1, flags) == 0
+    if flags["show_all"]:
+        assert diff_type(int1, int1, flags) == 0
+    else:
+        assert diff_type(int1, int1, flags) is None
+
     assert diff_type(None, int1, flags) == "-0"
     assert diff_type(int1, None, flags) == "+0"
     assert diff_type(int1, int2, flags) == {"change": -10, "new": 0, "old": 10}

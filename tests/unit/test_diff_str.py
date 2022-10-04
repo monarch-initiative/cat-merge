@@ -1,4 +1,3 @@
-import pytest
 from tests.test_diff_utils import *
 from cat_merge.qc_diff_utils import diff_str
 

@@ -7,11 +7,13 @@ def validate_diff_args(f):
     def wrapped_diff(*args, **kwargs):
         a = kwargs.get("a") if len(args) < 1 else args[0]
         b = kwargs.get("b") if len(args) < 2 else args[1]
-        # flags = kwargs.get("flags") if len(args) < 3 else args[2]
+        flags = kwargs.get("flags") if len(args) < 3 else args[2]
 
-        # if all(k in flags for k in ("show_all", "change")):
-        #     message = f.__name__ + ": flags missing: flags dict must contain 'all' and 'match'"
-        #     raise KeyError(message)
+        if not isinstance(flags, dict) or \
+                any(key not in flags for key in ("show_all", "change")) or \
+                any(not isinstance(value, bool) for value in flags.values()):
+            message = f.__name__ + ": bad flags -- flags dict must contain 'show_all' and 'match' as bool"
+            raise KeyError(message)
 
         if type(a) != type(b) and not (a is None or b is None):
             message = f.__name__ + ": operands have different types. a: " + str(type(a)) + " b: " + str(type(b))
@@ -22,6 +24,7 @@ def validate_diff_args(f):
             raise ValueError(message)
 
         return f(*args, **kwargs)
+
     return wrapped_diff
 
 
@@ -83,7 +86,6 @@ def diff_type(
         b: Union[List, Dict, str, int, None],
         flags: Dict
 ) -> Union[List, str, int, None]:
-
     diff: Union[Dict, List, int, str, None]
     case_type = a if a is not None else b
     match case_type:

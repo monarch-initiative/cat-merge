@@ -1,12 +1,6 @@
 import pytest
 from cat_merge.qc_diff_utils import validate_diff_args
-from tests.test_diff_utils import flags_params
-from typing import Dict, List
-
-
-@pytest.fixture
-def list1() -> List:
-    return ['item1', 'item7', 'item2']
+from tests.test_utils import flags_params
 
 
 @pytest.mark.parametrize("flags", flags_params.values(), ids=list(flags_params.keys()))
@@ -35,5 +29,3 @@ def test_validate_diff_args(list1, flags):
 
     with pytest.raises(TypeError):
         test_decorator({}, [], flags)
-
-

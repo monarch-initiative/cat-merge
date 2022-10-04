@@ -3,8 +3,8 @@ from cat_merge.qc_diff_utils import validate_diff_args
 from tests.test_utils import flags_params
 
 
-@pytest.mark.parametrize("flags", flags_params.values(), ids=list(flags_params.keys()))
-def test_validate_diff_args(list1, flags):
+@pytest.mark.parametrize("flags", flags_params().values(), ids=list(flags_params().keys()))
+def test_validate_diff_args(flags):
     @validate_diff_args
     def test_decorator(a, b, flags):
         pass

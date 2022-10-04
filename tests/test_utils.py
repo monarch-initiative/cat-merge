@@ -1,5 +1,7 @@
+import copy
 import pandas as pd
 from io import StringIO
+from typing import Dict
 
 import pytest
 from pandas.core.frame import DataFrame
@@ -18,7 +20,9 @@ def value(df: DataFrame, id: str, column: str):
     return list(df.loc[df['id'] == id][column])[0]
 
 
-flags_params = {"change_T_show_T": {"change": True, "show_all": True},
-                "change_F_show_T": {"change": False, "show_all": True},
-                "change_T_show_F": {"change": True, "show_all": False},
-                "change_F_show_F": {"change": False, "show_all": False}}
+def flags_params():
+    flags_params = {"change_T_show_T": {"change": True, "show_all": True},
+                    "change_F_show_T": {"change": False, "show_all": True},
+                    "change_T_show_F": {"change": True, "show_all": False},
+                    "change_F_show_F": {"change": False, "show_all": False}}
+    return copy.deepcopy(flags_params)

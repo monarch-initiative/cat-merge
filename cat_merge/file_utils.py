@@ -3,7 +3,7 @@ import os
 import tarfile
 from pathlib import Path
 import pandas as pd
-from grape import Graph  # type: ignore
+# from grape import Graph  # type: ignore
 from typing import IO, List, Optional, Tuple, Union
 
 

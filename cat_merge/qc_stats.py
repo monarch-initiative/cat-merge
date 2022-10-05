@@ -1,6 +1,7 @@
 import yaml
 from grape import Graph  # type: ignore
 
+
 def load_graph(name: str, version: str, edges_path: str,
                nodes_path: str) -> Graph:
     """
@@ -45,9 +46,6 @@ def create_stats_report(g: Graph) -> List[Dict]:
                    "MeanNodeDegree": "{:.2f}".format(mean_node_degree)}
 
     return [graph_stats]
-
-
-
 
 
 def qc_stats_report(nodes_file_name: str = None, edges_file_name: str = None):

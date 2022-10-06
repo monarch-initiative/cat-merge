@@ -3,7 +3,7 @@ from pandas.core.frame import DataFrame
 from typing import List
 from cat_merge.model.merged_kg import MergedKG
 from cat_merge.mapping_utils import apply_mappings
-
+import numpy as np
 
 def concat_dataframes(dataframes: List[DataFrame]) -> DataFrame:
     return pd.concat(dataframes, axis=0)
@@ -29,9 +29,9 @@ def get_dangling_edges(edges: DataFrame, nodes: DataFrame) -> DataFrame:
 
 def merge_kg(edge_dfs: List[DataFrame], node_dfs: List[DataFrame], mapping_dfs: List[DataFrame] = None, merge_delimiter: str = "|") -> MergedKG:
     all_nodes = concat_dataframes(node_dfs)
-    all_nodes.fillna("None", inplace=True)
+    all_nodes = all_nodes.fillna(np.nan).replace([np.nan], [None])
     all_edges = concat_dataframes(edge_dfs)
-    all_edges.fillna("None", inplace=True)
+    all_edges = all_edges.fillna(np.nan).replace([np.nan], [None])
 
     if mapping_dfs is not None and len(mapping_dfs) > 0:
         mapping_df = concat_dataframes(mapping_dfs)

@@ -6,6 +6,7 @@ import pandas as pd
 from grape import Graph  # type: ignore
 from typing import IO, List, Optional, Tuple, Union
 
+
 from pandas import DataFrame
 
 from cat_merge.model.merged_kg import MergedKG
@@ -25,7 +26,7 @@ def get_files(filepath: str, nodes_match: str = "_nodes", edges_match: str = "_e
 def read_dfs(files: List[str], add_source_col: Optional[str] = "provided_by") -> List[pd.DataFrame]:
     dataframes = []
     for file in files:
-        dataframes.append(read_df(file, add_source_col, file))
+        dataframes.append(read_df(file, add_source_col, Path(file).stem))
     return dataframes
 
 

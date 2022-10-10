@@ -19,7 +19,7 @@ def qc_report(archive_path: str,
         yaml.dump(report, report_file)
 
 
-def qc_diff(qc_file_a: str, qc_file_b: str, output_path: str = None, show_all: bool = "False"):
+def qc_diff(qc_file_a: str, qc_file_b: str, output_path: str = None, show_all: bool = False):
     with open(qc_file_a, "r") as yml_file:
         qc_yaml_a = yaml.safe_load(yml_file)
     with open(qc_file_b, "r") as yml_file:

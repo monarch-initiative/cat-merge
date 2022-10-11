@@ -1,17 +1,6 @@
-import pytest
+from tests.test_utils import *
 from cat_merge.qc_diff_utils import diff_type
-from typing import List, Dict
-
-
-def test_diff_type_exceptions():
-    with pytest.raises(ValueError) as e_info:
-        diff_type(None, None)
-
-    with pytest.raises(TypeError) as e_info:
-        diff_type(str(), int())
-
-    with pytest.raises(NotImplementedError) as e_info:
-        diff_type(set(), None)
+from typing import List
 
 
 @pytest.fixture
@@ -24,11 +13,19 @@ def str2() -> str:
     return "str2"
 
 
-def test_diff_type_str(str1, str2):
-    assert diff_type(str1, str1) == "str1"
-    assert diff_type(None, str1) == "-str1"
-    assert diff_type(str1, None) == "+str1"
-    assert diff_type(str1, str2) == ["+str1", "-str2"]
+def test_diff_type_str(str1, str2, flags):
+    if flags["show_all"]:
+        assert diff_type(str1, str1, flags) == "str1"
+    else:
+        assert diff_type(str1, str1, flags) is None
+        assert flags["change"] is False
+
+    assert diff_type(None, str1, flags) == "-str1"
+    assert flags["change"] is True
+    assert diff_type(str1, None, flags) == "+str1"
+    assert flags["change"] is True
+    assert diff_type(str1, str2, flags) == ["+str1", "-str2"]
+    assert flags["change"] is True
 
 
 @pytest.fixture
@@ -41,11 +38,19 @@ def int2() -> int:
     return 10
 
 
-def test_diff_type_int(int1, int2):
-    assert diff_type(int1, int1) == 0
-    assert diff_type(None, int1) == "-0"
-    assert diff_type(int1, None) == "+0"
-    assert diff_type(int1, int2) == {"change": -10, "new": 0, "old": 10}
+def test_diff_type_int(int1, int2, flags):
+    if flags["show_all"]:
+        assert diff_type(int1, int1, flags) == 0
+    else:
+        assert diff_type(int1, int1, flags) is None
+        assert flags["change"] is False
+
+    assert diff_type(None, int1, flags) == "-0"
+    assert flags["change"] is True
+    assert diff_type(int1, None, flags) == "+0"
+    assert flags["change"] is True
+    assert diff_type(int1, int2, flags) == {"change": -10, "new": 0, "old": 10}
+    assert flags["change"] is True
 
 
 # @pytest.fixture
@@ -109,10 +114,13 @@ def empty_list() -> List:
     return list()
 
 
-def test_diff_type_list(empty_list):
-    assert diff_type(empty_list, empty_list) == list()
-    assert diff_type(None, empty_list) == list()
-    assert diff_type(empty_list, None) == list()
+def test_diff_type_list(empty_list, flags):
+    assert diff_type(empty_list, empty_list, flags) == list()
+    assert flags["change"] is False
+    assert diff_type(None, empty_list, flags) == list()
+    assert flags["change"] is False
+    assert diff_type(empty_list, None, flags) == list()
+    assert flags["change"] is False
 
 
 # @pytest.fixture

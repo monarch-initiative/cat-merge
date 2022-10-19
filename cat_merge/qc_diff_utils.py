@@ -117,13 +117,18 @@ def diff_dict(a: Union[Dict, None], b: Union[Dict, None], flags: Dict) -> Dict:
     missing = ""
     change = False
 
-    for key in dict.fromkeys(list(a.keys()), list(b.keys())):
+    for key in dict.fromkeys(list(a.keys()) + list(b.keys())):
         if key not in a.keys():
             missing = "-"
         elif key not in b.keys():
             missing = "+"
-        diff_value = diff_type(a.get(key), b.get(key), flags)
-        if flags["change"] or flags["show_all"]:
+
+        if a.get(key) is None and b.get(key) is None:
+            diff_value = None
+        else:
+            diff_value = diff_type(a.get(key), b.get(key), flags)
+
+        if flags["change"] or flags["show_all"] or missing != "":
             diff[missing + key] = diff_value
         change = any([change, flags["change"]])
         flags["change"] = False

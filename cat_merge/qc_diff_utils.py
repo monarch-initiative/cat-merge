@@ -111,12 +111,16 @@ def diff_type(
 
 @validate_diff_args
 def diff_dict(a: Union[Dict, None], b: Union[Dict, None], flags: Dict) -> Dict:
+    if a is None or b is None:
+        change = True
+    else:
+        change = False
+
     diff = {}
     a = {} if a is None else a
     b = {} if b is None else b
-    missing = ""
-    change = False
 
+    missing = ""
     for key in dict.fromkeys(list(a.keys()) + list(b.keys())):
         if key not in a.keys():
             missing = "-"

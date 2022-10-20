@@ -108,7 +108,7 @@ def test_diff_type_dict_none(dict_of_none, empty_dict, flags):
 
 
 @pytest.fixture
-def dict_of_str() -> Dict:
+def dict_of_empty_str() -> Dict:
     return {'one': ''}
 
 
@@ -146,26 +146,45 @@ def test_diff_type_dict_of_int(dict_of_int, flags):
     assert diff_type(dict_of_int, None, flags) == {'+one': '+0'}
     assert flags['change'] is True
 
-#
-#
-# @pytest.fixture
-# def dict_of_list() -> Dict:
-#     return {"one": []}
-#
-#
-# def test_diff_type_dict_of_list(dict_of_list):
-#     assert diff_type(dict_of_list) == {"one": []}
-#
-#
-# @pytest.fixture
-# def dict_of_dict() -> Dict:
-#     return {"one": {}}
-#
-#
-# def test_diff_type_dict_of_dict(dict_of_dict):
-#     assert diff_type(dict_of_dict) == {"one": {}}
-#
-#
+
+@pytest.fixture
+def dict_of_empty_list() -> Dict:
+    return {"one": []}
+
+
+def test_diff_type_dict_of_empty_list(dict_of_empty_list, flags):
+    if flags['show_all']:
+        assert diff_type(dict_of_empty_list, dict_of_empty_list, flags) == {"one": []}
+    else:
+        assert diff_type(dict_of_empty_list, dict_of_empty_list, flags) == {}
+    assert flags["change"] is False
+
+    assert diff_type(None, dict_of_empty_list, flags) == {"-one": []}
+    assert flags["change"] is True
+
+    flags["change"] = False
+    assert diff_type(dict_of_empty_list, None, flags) == {"+one": []}
+    assert flags["change"] is True
+
+
+@pytest.fixture
+def dict_of_empty_dict() -> Dict:
+    return {"one": {}}
+
+
+def test_diff_type_dict_of_empty_dict(dict_of_empty_dict, flags):
+    if flags['show_all']:
+        assert diff_type(dict_of_empty_dict, dict_of_empty_dict, flags) == {"one": {}}
+    else:
+        assert diff_type(dict_of_empty_dict, dict_of_empty_dict, flags) == {}
+    assert flags['change'] is False
+
+    assert diff_type(None, dict_of_empty_dict, flags) == {"-one": {}}
+    assert flags['change'] is True
+
+    flags['change'] = False
+    assert diff_type(dict_of_empty_dict, None, flags) == {"+one": {}}
+    assert flags['change'] is True
 
 
 @pytest.fixture
@@ -182,37 +201,73 @@ def test_diff_type_list(empty_list, flags):
     assert flags["change"] is False
 
 
-# @pytest.fixture
-# def list_of_str() -> List:
-#     return [""]
-#
-#
-# def test_diff_type_list_of_str(list_of_str):
-#     assert diff_type(list_of_str) == []
-#
-#
-# @pytest.fixture
-# def list_of_int() -> List:
-#     return [0]
-#
-#
-# def test_diff_type_list_of_int(list_of_int):
-#     assert diff_type(list_of_int) == []
-#
-#
-# @pytest.fixture
-# def list_of_dict() -> List[Dict]:
-#     return [{}]
-#
-#
-# def test_diff_type_list_of_dict(list_of_dict):
-#     assert diff_type(list_of_dict) == [{}]
-#
-#
-# @pytest.fixture
-# def list_of_list() -> List[List]:
-#     return [[]]
-#
-#
-# def test_diff_type_list_of_list(list_of_list):
-#     assert diff_type(list_of_list) == [[]]
+@pytest.fixture
+def list_of_str() -> List:
+    return ['']
+
+
+def test_diff_type_list_of_str(list_of_str, flags):
+    if flags['show_all']:
+        assert diff_type(list_of_str, list_of_str, flags) == ['']
+    else:
+        assert diff_type(list_of_str, list_of_str, flags) == []
+
+    assert diff_type(None, list_of_str, flags) == ['-']
+    assert flags['change'] is True
+
+    flags['change'] = False
+    assert diff_type(list_of_str, None, flags) == ['+']
+    assert flags['change'] is True
+
+
+@pytest.fixture
+def list_of_int() -> List:
+    return [0]
+
+
+def test_diff_type_list_of_int(list_of_int, flags):
+    if flags['show_all']:
+        assert diff_type(list_of_int, list_of_int, flags) == [0]
+    else:
+        assert diff_type(list_of_int, list_of_int, flags) == []
+    assert flags['change'] is False
+
+    assert diff_type(None, list_of_int, flags) == ['-0']
+    assert flags['change'] is True
+
+    flags['change'] = False
+    assert diff_type(list_of_int, None, flags) == ['+0']
+    assert flags['change'] is True
+
+
+@pytest.fixture
+def list_of_empty_dict() -> List[Dict]:
+    return [{}]
+
+
+def test_diff_type_list_of_dict(list_of_empty_dict, flags):
+    with pytest.raises(NotImplementedError):
+        assert diff_type(list_of_empty_dict, list_of_empty_dict, flags)
+
+    with pytest.raises(NotImplementedError):
+        assert diff_type(None, list_of_empty_dict, flags)
+
+    with pytest.raises(NotImplementedError):
+        assert diff_type(list_of_empty_dict, None, flags)
+
+
+@pytest.fixture
+def list_of_list() -> List[List]:
+    return [[]]
+
+
+def test_diff_type_list_of_list(list_of_list, flags):
+    with pytest.raises(NotImplementedError):
+        assert diff_type(list_of_list, list_of_list, flags)
+
+    with pytest.raises(NotImplementedError):
+        assert diff_type(None, list_of_list, flags)
+
+    with pytest.raises(NotImplementedError):
+        assert diff_type(list_of_list, None, flags)
+

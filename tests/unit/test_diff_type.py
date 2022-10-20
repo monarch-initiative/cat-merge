@@ -18,12 +18,16 @@ def test_diff_type_str(str1, str2, flags):
         assert diff_type(str1, str1, flags) == "str1"
     else:
         assert diff_type(str1, str1, flags) is None
-        assert flags["change"] is False
+    assert flags['change'] is False
 
     assert diff_type(None, str1, flags) == "-str1"
     assert flags["change"] is True
+
+    flags['change'] = False
     assert diff_type(str1, None, flags) == "+str1"
     assert flags["change"] is True
+
+    flags['change'] = False
     assert diff_type(str1, str2, flags) == ["+str1", "-str2"]
     assert flags["change"] is True
 

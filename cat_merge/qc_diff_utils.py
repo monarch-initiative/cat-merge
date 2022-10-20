@@ -129,6 +129,8 @@ def diff_dict(a: Union[Dict, None], b: Union[Dict, None], flags: Dict) -> Dict:
 
         if a.get(key) is None and b.get(key) is None:
             diff_value = None
+            if not (key in a.keys() and key in b.keys()):
+                flags['change'] = True
         else:
             diff_value = diff_type(a.get(key), b.get(key), flags)
 

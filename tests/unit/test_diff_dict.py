@@ -41,7 +41,7 @@ def empty_dict() -> Dict:
     return dict()
 
 
-def test_diff_dict_a_empty(empty_dict, dict1, flags):
+def test_diff_dict_empty(empty_dict, dict1, flags):
     assert diff_dict(None, empty_dict, flags) == dict()
     assert flags["change"] is True
     flags['change'] = False
@@ -57,6 +57,17 @@ def test_diff_dict_a_empty(empty_dict, dict1, flags):
     assert diff_dict(dict1, empty_dict, flags) == {'+item1': None, '+item7': '+item7', '+item2': '+item2'}
     assert flags["change"] is True
     flags['change'] = False
+
+
+@pytest.fixture
+def dict_of_none() -> Dict:
+    return {"one": None}
+
+
+def test_diff_dict_empty_none(dict_of_none, empty_dict, flags):
+    assert diff_dict(dict_of_none, empty_dict, flags) == {"+one": None}
+    assert flags['change'] is True
+    flags["change"] = False
 
 
 @pytest.fixture

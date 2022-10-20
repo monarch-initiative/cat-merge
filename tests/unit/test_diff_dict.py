@@ -60,24 +60,24 @@ def test_diff_dict_empty(empty_dict, dict1, flags):
 
 
 @pytest.fixture
-def dict_of_none() -> Dict:
+def dict_val_none() -> Dict:
     return {"one": None}
 
 
-def test_diff_dict_none(dict_of_none, empty_dict, flags):
-    assert diff_dict(dict_of_none, empty_dict, flags) == {"+one": None}
+def test_diff_dict_val_none(dict_val_none, empty_dict, flags):
+    assert diff_dict(dict_val_none, empty_dict, flags) == {"+one": None}
     assert flags['change'] is True
     flags["change"] = False
 
-    assert diff_dict(empty_dict, dict_of_none, flags) == {"-one": None}
+    assert diff_dict(empty_dict, dict_val_none, flags) == {"-one": None}
     assert flags['change'] is True
     flags["change"] = False
 
-    assert diff_dict(None, dict_of_none, flags) == {"-one": None}
+    assert diff_dict(None, dict_val_none, flags) == {"-one": None}
     assert flags['change'] is True
     flags["change"] = False
 
-    assert diff_dict(dict_of_none, None, flags) == {"+one": None}
+    assert diff_dict(dict_val_none, None, flags) == {"+one": None}
     assert flags['change'] is True
     flags["change"] = False
 
@@ -87,10 +87,19 @@ def dict2() -> Dict:
     return {'item7': 'item7', 'item1': None, 'item3': 'item3'}
 
 
-def test_diff_dict_mismatch(dict1, dict2, flags):
+def test_diff_dict_partial_match(dict1, dict2, flags):
     if flags["show_all"]:
         assert diff_dict(dict1, dict2, flags) == \
                {'item1': None, 'item7': 'item7', '+item2': '+item2', '-item3': '-item3'}
+        assert flags["change"] is True
+
+        flags["change"] = False
+        assert list(diff_dict(dict1, dict2, flags).keys()) == ['item1', 'item7', '+item2', '-item3']
+        assert flags["change"] is True
     else:
         assert diff_dict(dict1, dict2, flags) == {'+item2': '+item2', '-item3': '-item3'}
-    assert flags["change"] is True
+        assert flags["change"] is True
+
+        flags["change"] = False
+        assert list(diff_dict(dict1, dict2, flags).keys()) == ['+item2', '-item3']
+        assert flags["change"] is True

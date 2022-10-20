@@ -247,6 +247,11 @@ def sources_dict(a: Union[Dict, List[Dict]]) -> Dict:
         case None:
             pass
         case list():
+            if not all(isinstance(x, dict) for x in a):
+                # all list entries must be dict
+                message = "sources_dict: List contains non-dict entries, aborting"
+                raise ValueError(message)
+
             for i in a:
                 if i.get("name") is not None:
                     a_dict[i.get("name")] = i

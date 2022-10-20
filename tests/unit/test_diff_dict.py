@@ -64,8 +64,20 @@ def dict_of_none() -> Dict:
     return {"one": None}
 
 
-def test_diff_dict_empty_none(dict_of_none, empty_dict, flags):
+def test_diff_dict_none(dict_of_none, empty_dict, flags):
     assert diff_dict(dict_of_none, empty_dict, flags) == {"+one": None}
+    assert flags['change'] is True
+    flags["change"] = False
+
+    assert diff_dict(empty_dict, dict_of_none, flags) == {"-one": None}
+    assert flags['change'] is True
+    flags["change"] = False
+
+    assert diff_dict(None, dict_of_none, flags) == {"-one": None}
+    assert flags['change'] is True
+    flags["change"] = False
+
+    assert diff_dict(dict_of_none, None, flags) == {"+one": None}
     assert flags['change'] is True
     flags["change"] = False
 

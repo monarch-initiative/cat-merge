@@ -148,6 +148,12 @@ def diff_list(a: Union[List, None], b: Union[List, None], flags: Dict) -> List:
     diff = []
     a = [] if a is None else a
     b = [] if b is None else b
+
+    # Check if either list contains a list
+    if any(isinstance(n, list) and len(n) == 0 for n in a + b):
+        message = "diff_list: found list containing list, structure not supported."
+        raise NotImplementedError(message)
+
     a_as_keys = dict(zip(a, a))
     b_as_keys = dict(zip(b, b))
 

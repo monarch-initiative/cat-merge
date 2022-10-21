@@ -114,22 +114,74 @@ def get_missing(cols: List[pd.Series], ids: pd.Series) -> List[str]:
     return get_difference(pd.concat(cols).drop_duplicates().sort_values().tolist(), ids.tolist())
 
 
-def create_nodes_report(nodes: pd.DataFrame) -> List[Dict]:
-    node_report = []
-    node_grouping_fields = get_intersection(list(nodes.columns), ['id', 'category', 'in_taxon'])
+class ReportContainer:
+    def __init__(self, mode: str = "list"):
+        if mode == "dict":
+            self.data = dict()
+        elif mode == "list":
+            self.data = list()
+        else:
+            message = "create_nodes_report: Mode type: " + mode + " not allowed, supports list and dict."
+            raise ValueError(message)
 
-    nodes_group = nodes.groupby(['provided_by'])[node_grouping_fields]
-    for nodes_provided_by, nodes_provided_by_values in nodes_group:
+    def add(self, addend):
+        match self.data:
+            case list():
+                self.data.append(addend)
+            case dict():
+                self.data[addend['name']] = addend
+            case _:
+                message = "create_nodes_report: attempting to add to invalid object."
+                raise RuntimeError(message)
+
+    def __add__(self, addend):
+        self.add(addend)
+
+
+def report_container(mode: str = "list") -> Union[Dict, List]:
+    if mode == "list":
+        return list()
+    elif mode == "dict":
+        return dict()
+    else:
+        message = "create_nodes_report: Mode type: " + mode + " not allowed, supports list and dict."
+        raise ValueError(message)
+
+
+def report_container_add(container: Union[List, Dict], to_add: Dict, mode: str = "list"):
+    if mode == "list":
+        container.append(to_add)
+    elif mode == "dict":
+        container[to_add['name']] = to_add
+    else:
+        message = "create_nodes_report: attempting to add to invalid object."
+        raise RuntimeError(message)
+
+
+def create_nodes_report(
+        nodes: pd.DataFrame,
+        mode: str = "list",
+        group_by: str = "provided_by"
+) -> Union[List[Dict], Dict]:
+    # node_report = report_container(mode)
+    node_report = ReportContainer(mode)
+
+    node_grouping_fields = get_intersection(list(nodes.columns), ['id', 'category', 'in_taxon'])
+    nodes_group = nodes.groupby([group_by])[node_grouping_fields]
+    for nodes_grouped_by, nodes_grouped_by_values in nodes_group:
         node_object = {
-            "name": nodes_provided_by,
-            "namespaces": col_to_yaml(get_namespace(nodes_provided_by_values['id'])),
-            "categories": col_to_yaml(nodes_provided_by_values['category']),
-            "total_number": nodes_provided_by_values['id'].size,
+            "name": nodes_grouped_by,
+            "namespaces": col_to_yaml(get_namespace(nodes_grouped_by_values['id'])),
+            "categories": col_to_yaml(nodes_grouped_by_values['category']),
+            "total_number": nodes_grouped_by_values['id'].size,
         }
         if 'in_taxon' in nodes.columns:
-            node_object["taxon"] = col_to_yaml(nodes_provided_by_values["in_taxon"])
-        node_report.append(node_object)
-    return node_report
+            node_object["taxon"] = col_to_yaml(nodes_grouped_by_values["in_taxon"])
+
+        # report_container_add(node_report, node_object, mode)
+        node_report + node_object
+    # return node_report
+    return node_report.data
 
 
 def cols_fill_na(df: pd.DataFrame, names_values: dict) -> pd.DataFrame:
@@ -159,19 +211,21 @@ def get_difference(a: Union[List, pd.Series], b: Union[List, pd.Series]) -> Unio
     return s if type(a) is list else pd.Series(s, dtype=a.dtype, name=a.name)
 
 
-def create_qc_report(kg: MergedKG) -> Dict:
+def create_qc_report(kg: MergedKG, mode: str = "list", group_by: str = "provided_by") -> Dict:
     """
     interface for generating qc report from merged kg
     :param kg: a MergeKG with data to create QC report
+    :param mode: str indicating mode for qc report generation
+    :param group_by: str indicating which field for qc report grouping
     :return: a dictionary representing the QC report
     """
 
     nodes = cols_fill_na(kg.nodes, {'in_taxon': 'missing taxon', 'category': 'missing category'})
     ingest_collection = {
-        'nodes': create_nodes_report(nodes),
-        # 'duplicate_nodes': create_nodes_report(kg.duplicate_nodes)
-        'edges': create_edges_report(kg.edges, nodes),
-        'dangling_edges': create_edges_report(kg.dangling_edges, nodes)
+        'nodes': create_nodes_report(nodes, mode, group_by),
+        # 'duplicate_nodes': create_nodes_report(kg.duplicate_nodes, mode, group_by= "provided_by")
+        'edges': create_edges_report(kg.edges, nodes, mode, group_by),
+        'dangling_edges': create_edges_report(kg.dangling_edges, nodes, mode, group_by)
     }
 
     return ingest_collection

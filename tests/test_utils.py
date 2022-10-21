@@ -20,10 +20,12 @@ def value(df: DataFrame, id: str, column: str):
 
 
 def flags_params():
-    params = {"change_T_show_T": {"change": True, "show_all": True},
-              "change_F_show_T": {"change": False, "show_all": True},
-              "change_T_show_F": {"change": True, "show_all": False},
-              "change_F_show_F": {"change": False, "show_all": False}}
+    params = {
+        # "change_T_show_T": {"change": True, "show_all": True},
+        "change_F_show_T": {"change": False, "show_all": True},
+        # "change_T_show_F": {"change": True, "show_all": False},
+        "change_F_show_F": {"change": False, "show_all": False},
+    }
     return copy.deepcopy(params)
 
 

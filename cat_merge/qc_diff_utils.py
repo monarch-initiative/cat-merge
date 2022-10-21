@@ -111,19 +111,30 @@ def diff_type(
 
 @validate_diff_args
 def diff_dict(a: Union[Dict, None], b: Union[Dict, None], flags: Dict) -> Dict:
+    if a is None or b is None:
+        change = True
+    else:
+        change = False
+
     diff = {}
     a = {} if a is None else a
     b = {} if b is None else b
-    missing = ""
-    change = False
 
-    for key in dict.fromkeys(list(a.keys()), list(b.keys())):
+    missing = ""
+    for key in dict.fromkeys(list(a.keys()) + list(b.keys())):
         if key not in a.keys():
             missing = "-"
         elif key not in b.keys():
             missing = "+"
-        diff_value = diff_type(a.get(key), b.get(key), flags)
-        if flags["change"] or flags["show_all"]:
+
+        if a.get(key) is None and b.get(key) is None:
+            diff_value = None
+            if not (key in a.keys() and key in b.keys()):
+                flags['change'] = True
+        else:
+            diff_value = diff_type(a.get(key), b.get(key), flags)
+
+        if flags["change"] or flags["show_all"] or missing != "":
             diff[missing + key] = diff_value
         change = any([change, flags["change"]])
         flags["change"] = False
@@ -137,6 +148,12 @@ def diff_list(a: Union[List, None], b: Union[List, None], flags: Dict) -> List:
     diff = []
     a = [] if a is None else a
     b = [] if b is None else b
+
+    # Check if either list contains a list
+    if any(isinstance(n, list) and len(n) == 0 for n in a + b):
+        message = "diff_list: found list containing list, structure not supported."
+        raise NotImplementedError(message)
+
     a_as_keys = dict(zip(a, a))
     b_as_keys = dict(zip(b, b))
 
@@ -230,6 +247,11 @@ def sources_dict(a: Union[Dict, List[Dict]]) -> Dict:
         case None:
             pass
         case list():
+            if not all(isinstance(x, dict) for x in a):
+                # all list entries must be dict
+                message = "sources_dict: List contains non-dict entries, aborting"
+                raise ValueError(message)
+
             for i in a:
                 if i.get("name") is not None:
                     a_dict[i.get("name")] = i

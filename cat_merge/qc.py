@@ -7,7 +7,7 @@ from cat_merge.qc_diff_utils import diff_yaml
 def qc_report(archive_path: str,
               output_dir: str,
               output_name: str = "qc_report.yaml",
-              mode: str = "list",
+              data_type: type = list,
               group_by: str = "provided_by",
               add_provided_by: bool = True,
               # reimplement these when we use grape stats
@@ -18,7 +18,7 @@ def qc_report(archive_path: str,
               ):
     kg = read_kg(archive_path)
     # report = create_qc_report(kg)
-    report = create_qc_report(kg, mode, group_by)
+    report = create_qc_report(kg, data_type, group_by)
 
     with open(f"{output_dir}/{output_name}", "w") as report_file:
         yaml.dump(report, report_file)

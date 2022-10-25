@@ -120,17 +120,21 @@ class ReportContainer:
                           "' not allowed, supports list and dict."
                 raise ValueError(message)
 
-    def add(self, addend, key_name: str = None):
+    def add(self, addend: dict, key_name: str = None):
         match self.data:
             case list():
                 self.data.append(addend)
             case dict():
                 key = key_name if key_name is not None else self.key_name
-                if key in addend.keys():
-                    self.data[addend[key]] = addend
+                if type(addend) is dict and key in addend.keys():
+                    if key in self.data.keys():
+                        message = "ReportContainer: key: '" + key + "' already added to data."
+                        raise KeyError(message)
+                    else:
+                        self.data[key] = addend
                 else:
                     message = "ReportContainer: key: '" + key + "' missing from dict to add."
-                    raise RuntimeError(message)
+                    raise KeyError(message)
             case _:
                 message = "ReportContainer: attempting to add to invalid data type: " + str(type(self.data))
                 raise RuntimeError(message)

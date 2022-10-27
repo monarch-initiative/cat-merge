@@ -28,22 +28,27 @@ def get_missing(edges: pd.DataFrame, cols: List[str], ids: pd.Series) -> pd.Seri
     return get_difference(edges.melt(value_vars=cols)["value"].convert_dtypes(), ids)
 
 
-def create_predicate_report(edges_provided_by_values, unique_id_from_nodes) -> List[Dict]:
-    predicates = []
-    predicate_group = edges_provided_by_values.groupby(['predicate'])[['id', 'object', 'subject', 'category']]
+def create_predicate_report(
+        edges_grouped_by_values: pd.DataFrame,
+        node_ids: pd.Series,
+        data_type: type = list,
+        group_by: str = "predicate"
+) -> Union[List[Dict], Dict]:
+    predicates = ReportContainer(data_type)
+    predicate_group = edges_grouped_by_values.groupby([group_by])[['id', 'object', 'subject', 'category']]
     for predicate, predicate_values in predicate_group:
         predicate_object = {
             "uri": predicate,
             "total_number": predicate_values['id'].size,
-            "missing_subjects": len(set(predicate_values['subject']) - set(unique_id_from_nodes)),
-            "missing_objects": len(set(predicate_values['object']) - set(unique_id_from_nodes)),
+            "missing_subjects": len(set(predicate_values['subject']) - set(node_ids)),
+            "missing_objects": len(set(predicate_values['object']) - set(node_ids)),
             "missing_subject_namespaces":
-                col_to_yaml(get_namespace(get_difference(predicate_values['subject'], unique_id_from_nodes))),
+                col_to_yaml(get_namespace(get_difference(predicate_values['subject'], node_ids))),
             "missing_object_namespaces":
-                col_to_yaml(get_namespace(get_difference(predicate_values['object'], unique_id_from_nodes))),
+                col_to_yaml(get_namespace(get_difference(predicate_values['object'], node_ids))),
         }
-        predicates.append(predicate_object)
-    return predicates
+        predicates.add(predicate_object)
+    return predicates.data
 
 
 def create_edge_node_types_report(
@@ -95,8 +100,8 @@ def create_edges_report(
     edges_group = edges.groupby([group_by])[['id', 'object', 'subject', 'predicate', 'category']]
     for edges_grouped_by, edges_grouped_by_values in edges_group:
         edge_object = create_edge_report(edges_grouped_by, edges_grouped_by_values, nodes["id"])
-        edge_object["predicates"] = create_predicate_report(edges_grouped_by_values, nodes["id"])
-        edge_object["node_types"] = create_edge_node_types_report(edges_grouped_by_values, nodes)
+        edge_object["predicates"] = create_predicate_report(edges_grouped_by_values, nodes["id"], data_type, group_by)
+        edge_object["node_types"] = create_edge_node_types_report(edges_grouped_by_values, nodes, data_type, group_by)
         edges_report.add(edge_object)
     return edges_report.data
 

@@ -144,7 +144,7 @@ class ReportContainer:
                         message = "ReportContainer: key: '" + key + "' already added to data."
                         raise KeyError(message)
                     else:
-                        self.data[key] = addend
+                        self.data[addend.get(key)] = addend
                 else:
                     message = "ReportContainer: key: '" + key + "' missing from dict to add."
                     raise KeyError(message)

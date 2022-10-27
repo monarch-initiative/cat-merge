@@ -44,11 +44,24 @@ def test_report_container_(data_type, key_name, expected):
 
 @pytest.mark.parametrize("data_type,key_name,addend,expected", [
     pytest.param(list, 'name', {'name': "one"}, [{'name': "one"}], id="list"),
-    pytest.param(dict, 'name', {'name': "one"}, {'name': {'name': "one"}}, id="dict"),
+    pytest.param(dict, 'name', {'name': "one"}, {'one': {'name': "one"}}, id="dict"),
 ])
 def test_report_container_add(data_type, key_name, addend, expected):
     rc = ReportContainer(data_type, key_name)
     rc.add(addend)
+    assert rc.data == expected
+
+
+@pytest.mark.parametrize("data_type,key_name,addend1, addend2,expected", [
+    pytest.param(list, 'name', {'name': "one"}, {'name': "two"},
+                 [{'name': "one"}, {'name': "two"}], id="list"),
+    pytest.param(dict, 'name', {'name': "one"}, {'name': "two"},
+                 {'one': {'name': "one"}, 'two': {'name': "two"}}, id="dict"),
+])
+def test_report_container_add_two(data_type, key_name, addend1, addend2, expected):
+    rc = ReportContainer(data_type, key_name)
+    rc.add(addend1)
+    rc.add(addend2)
     assert rc.data == expected
 
 

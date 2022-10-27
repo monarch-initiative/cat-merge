@@ -83,8 +83,10 @@ def create_edges_report(
         group_by: str = "provided_by"
 ) -> Union[List[Dict], Dict]:
     edges_report = ReportContainer(data_type)
-    edges_group = edges.groupby([group_by])[['id', 'object', 'subject', 'predicate', 'category']]
+    if len(edges) == 0:
+        return edges_report.data
 
+    edges_group = edges.groupby([group_by])[['id', 'object', 'subject', 'predicate', 'category']]
     for edges_grouped_by, edges_grouped_by_values in edges_group:
         edge_object = create_edge_report(edges_grouped_by, edges_grouped_by_values, nodes["id"])
         edge_object["predicates"] = create_predicate_report(edges_grouped_by_values, nodes["id"])
@@ -146,6 +148,8 @@ def create_nodes_report(
         group_by: str = "provided_by"
 ) -> Union[List[Dict], Dict]:
     node_report = ReportContainer(data_type)
+    if len(nodes) == 0:
+        return node_report.data
 
     node_grouping_fields = get_intersection(list(nodes.columns), ['id', 'category', 'in_taxon'])
     nodes_group = nodes.groupby([group_by])[node_grouping_fields]
@@ -201,9 +205,9 @@ def create_qc_report(kg: MergedKG, data_type: type = list, group_by: str = "prov
     nodes = cols_fill_na(kg.nodes, {'in_taxon': 'missing taxon', 'category': 'missing category'})
     ingest_collection = {
         'nodes': create_nodes_report(nodes, data_type, group_by),
-        # 'duplicate_nodes': create_nodes_report(kg.duplicate_nodes, mode, group_by= "provided_by")
+        'duplicate_nodes': create_nodes_report(kg.duplicate_nodes, data_type, group_by),
         'edges': create_edges_report(kg.edges, nodes, data_type, group_by),
-        # 'dangling_edges': create_edges_report(kg.dangling_edges, nodes, data_type, group_by)
+        'dangling_edges': create_edges_report(kg.dangling_edges, nodes, data_type, group_by)
     }
 
     return ingest_collection

@@ -13,13 +13,19 @@ def create_edge_report(edges_grouped_by, edges_grouped_by_values, unique_id_from
         ).drop_duplicates()),
         "categories": col_to_yaml(edges_grouped_by_values['category']),
         "total_number": edges_grouped_by_values['id'].size,
-        "missing": len(get_missing(
+        "missing_old": len(get_missing_old(
             [edges_grouped_by_values['subject'], edges_grouped_by_values['object']], unique_id_from_nodes)),
+        "missing": len(get_missing(edges_grouped_by_values, ['subject', 'object'], unique_id_from_nodes)),
         "predicates": [],
         "node_types": []
     }
 
     return edge_object
+
+
+def get_missing(edges: pd.DataFrame, cols: List[str], ids: pd.Series) -> pd.Series:
+    # Have to convert the dtype of the series back to the same dtype after the melt
+    return get_difference(edges.melt(value_vars=cols)["value"].convert_dtypes(), ids)
 
 
 def create_predicate_report(edges_provided_by_values, unique_id_from_nodes) -> List[Dict]:
@@ -105,7 +111,7 @@ def col_to_yaml(col: pd.Series) -> List[str]:
     return col.drop_duplicates().sort_values().tolist()
 
 
-def get_missing(cols: List[pd.Series], ids: pd.Series) -> List[str]:
+def get_missing_old(cols: List[pd.Series], ids: pd.Series) -> List[str]:
     return get_difference(pd.concat(cols).drop_duplicates().sort_values().tolist(), ids.tolist())
 
 

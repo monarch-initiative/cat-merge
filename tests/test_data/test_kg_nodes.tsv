@@ -1,0 +1,20 @@
+id	category	name	description	xref	provided_by	in_taxon	source	symbol	synonyms	type	synonym
+HP:0000006	biolink:PhenotypicFeature	Autosomal dominant inheritance (HPO)	A mode of inheritance that is observed for traits related to a gene encoded on one of the autosomes (i.e., the human chromosomes 1-22) in which a trait manifests in heterozygotes. In the context of medical genetics, an autosomal dominant disorder is caused when a single copy of the mutant allele is present. Males and females are affected equally, and can both transmit the disorder with a risk of 50% for each child of inheriting the mutant allele.		phenio_nodes						
+HP:0000007	biolink:PhenotypicFeature	Autosomal recessive inheritance (HPO)	A mode of inheritance that is observed for traits related to a gene encoded on one of the autosomes (i.e., the human chromosomes 1-22) in which a trait manifests in individuals with two pathogenic alleles, either homozygotes (two copies of the same mutant allele) or compound heterozygotes (whereby each copy of a gene has a distinct mutant allele).		phenio_nodes						
+HP:0001081	biolink:PhenotypicFeature	Cholelithiasis (HPO)	Hard, pebble-like deposits that form within the gallbladder.		phenio_nodes						
+HP:0002904	biolink:PhenotypicFeature	Hyperbilirubinemia (HPO)	An increased amount of bilirubin in the blood.		phenio_nodes						
+MONDO:0003689	biolink:Disease	familial hemolytic anemia	A congenital hemolytic anemia caused by defects of the erythrocyte membrane, enzyme deficiencies, or hemoglobinopathies.		phenio_nodes						
+MONDO:0009260	biolink:Disease	GM1 gangliosidosis type 1	GM1 gangliosidosis type 1 is the severe infantile form of GM1 gangliosidosis with variable neurological and systemic manifestations.		phenio_nodes						
+MONDO:0009340	biolink:Disease	non-spherocytic hemolytic anemia due to hexokinase deficiency	Nonspherocytic hemolytic anemia due to hexokinase deficiency (NSHA due to HK1 deficiency) is a very rare conditionmainly characterized by severe, chronic hemolysis, beginning in infancy. Approximately 20 cases of this condition have been described to date. Signs and symptoms of hexokinase deficiency are very similar to those of pyruvate kinase deficiency but anemia is generally more severe. Some affected individuals reportedly have had various abnormalities in addition to NSHA including multiple malformations, panmyelopathy, and latent diabetes.Itcan be caused by mutations in the HK1 gene and is inherited in an autosomal recessive manner. Treatment may include red cell transfusions for those with severe anemia.		phenio_nodes						
+MONDO:0017688	biolink:Disease	disorder of glycolysis			phenio_nodes						
+MONDO:0020777	biolink:Disease	congenital disorder of glycosylation with defective fucosylation 2			phenio_nodes						
+MONDO:0032807	biolink:Disease	neurodevelopmental disorder with visual defects and brain anomalies			phenio_nodes						
+HGNC:29500	biolink:Gene	fucose kinase		ENSEMBL:ENSG00000157353|OMIM:608675	hgnc_gene_nodes	NCBITaxon:9606		FCSK			FLJ39408|L-fucose kinase|FUK|fucokinase
+HGNC:4298	biolink:Gene	galactosidase beta 1		ENSEMBL:ENSG00000170266|OMIM:611458	hgnc_gene_nodes	NCBITaxon:9606		GLB1			EBP|elastin binding protein|ELNR1|elastin receptor 1, 67kDa|elastin receptor 1 (67kD)|galactosidase, beta 1
+HGNC:4922	biolink:Gene	hexokinase 1		ENSEMBL:ENSG00000156515|OMIM:142600	hgnc_gene_nodes	NCBITaxon:9606		HK1			
+HGNC:4925	biolink:Gene	hexokinase 3		ENSEMBL:ENSG00000160883|OMIM:142570	hgnc_gene_nodes	NCBITaxon:9606		HK3			hexokinase 3 (white cell)
+HGNC:6315	biolink:Gene	ketohexokinase		ENSEMBL:ENSG00000138030|OMIM:614058	hgnc_gene_nodes	NCBITaxon:9606		KHK			fructokinase|ketohexokinase (fructokinase)
+NCBIGene:100152344	biolink:Gene		hexokinase 1		ncbi_gene_nodes	NCBITaxon:9823		HK1			
+NCBIGene:280817	biolink:Gene		hexokinase 1		ncbi_gene_nodes	NCBITaxon:9913		HK1			
+REACT:R-HSA-6787639	biolink:Pathway	GDP-fucose biosynthesis			reactome_pathway_nodes	NCBITaxon:9606					
+REACT:R-HSA-1660662	biolink:Pathway	Glycosphingolipid metabolism			reactome_pathway_nodes	NCBITaxon:9606					

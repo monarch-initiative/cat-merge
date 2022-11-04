@@ -1,22 +1,49 @@
 import pytest
-from numpy import nan
+from itertools import zip_longest
+from typing import List, Dict
+
 from tests.fixtures.nodes import *
 from cat_merge.qc_utils import create_nodes_report
 
 
-def test_create_nodes_report_defaults(kg_report_nodes_1):
-    test_nodes_report = create_nodes_report(kg_report_nodes_1)
+@pytest.fixture
+def nodes_report_expected() -> List[Dict]:
+    report_values = [{'name': 'hgnc_gene_nodes', 'namespaces': ['HGNC'], 'categories': ['biolink:Gene'],
+                      'total_number': 5, 'taxon': ['NCBITaxon:9606']},
+                     {'name': 'ncbi_gene_nodes', 'namespaces': ['NCBIGene'], 'categories': ['biolink:Gene'],
+                      'total_number': 2, 'taxon': ['NCBITaxon:9823', 'NCBITaxon:9913']},
+                     {'name': 'phenio_nodes', 'namespaces': ['HP', 'MONDO'],
+                      'categories': ['biolink:Disease','biolink:PhenotypicFeature'], 'total_number': 10,
+                      'taxon': ['missing taxon']},
+                     {'name': 'reactome_pathway_nodes', 'namespaces': ['REACT'],
+                      'categories': ['biolink:Pathway'], 'total_number': 2, 'taxon': ['NCBITaxon:9606']}]
+    return report_values
 
-    assert len(test_nodes_report) == 4
-    report_names = [i['name'] for i in test_nodes_report]
-    assert report_names == ['hgnc_gene_nodes', 'ncbi_gene_nodes', 'phenio_nodes', 'reactome_pathway_nodes']
-    assert test_nodes_report[0] == {'name': 'hgnc_gene_nodes', 'namespaces': ['HGNC'], 'categories': ['biolink:Gene'],
-                                    'total_number': 5, 'taxon': ['NCBITaxon:9606']}
-    assert test_nodes_report[1] == {'name': 'ncbi_gene_nodes', 'namespaces': ['NCBIGene'],
-                                    'categories': ['biolink:Gene'], 'total_number': 2,
-                                    'taxon': ['NCBITaxon:9823', 'NCBITaxon:9913']}
-    assert test_nodes_report[2] == {'name': 'phenio_nodes', 'namespaces': ['HP', 'MONDO'],
-                                    'categories': ['biolink:Disease', 'biolink:PhenotypicFeature'],
-                                    'total_number': 10, 'taxon': ['missing taxon']}
-    assert test_nodes_report[3] == {'name': 'reactome_pathway_nodes', 'namespaces': ['REACT'],
-                                    'categories': ['biolink:Pathway'], 'total_number': 2, 'taxon': ['NCBITaxon:9606']}
+
+def check_report_values(report_values, nodes_report_expected):
+    for value, expect in zip_longest(report_values, nodes_report_expected):
+        assert value == expect
+
+
+def test_create_nodes_report_defaults(kg_report_nodes_1, nodes_report_expected):
+    nodes_report = create_nodes_report(kg_report_nodes_1)
+
+    assert type(nodes_report) is list
+    assert len(nodes_report) == 4
+    check_report_values(nodes_report, nodes_report_expected)
+
+
+def test_create_nodes_report_list(kg_report_nodes_1, nodes_report_expected):
+    nodes_report = create_nodes_report(kg_report_nodes_1, data_type=list)
+
+    assert type(nodes_report) is list
+    assert len(nodes_report) == 4
+    check_report_values(nodes_report, nodes_report_expected)
+
+
+def test_create_nodes_report_dict(kg_report_nodes_1, nodes_report_expected):
+    nodes_report = create_nodes_report(kg_report_nodes_1, data_type=dict)
+
+    assert type(nodes_report) is dict
+    assert len(nodes_report) == 4
+    check_report_values(nodes_report.values(), nodes_report_expected)

@@ -1,8 +1,8 @@
 import pytest
-from itertools import zip_longest
 from typing import List, Dict
 
 from tests.fixtures.nodes import *
+from tests.test_utils import check_report_values
 from cat_merge.qc_utils import create_nodes_report
 
 
@@ -18,11 +18,6 @@ def nodes_report_expected() -> List[Dict]:
                      {'name': 'reactome_pathway_nodes', 'namespaces': ['REACT'],
                       'categories': ['biolink:Pathway'], 'total_number': 2, 'taxon': ['NCBITaxon:9606']}]
     return report_values
-
-
-def check_report_values(report_values, nodes_report_expected):
-    for value, expect in zip_longest(report_values, nodes_report_expected):
-        assert value == expect
 
 
 def test_create_nodes_report_defaults(kg_report_nodes_1, nodes_report_expected):

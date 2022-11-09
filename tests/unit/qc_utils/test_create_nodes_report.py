@@ -2,7 +2,7 @@ import pytest
 from typing import List, Dict
 
 from tests.fixtures.nodes import *
-from tests.test_utils import check_report_values
+from tests.test_utils import check_report_data
 from cat_merge.qc_utils import create_nodes_report
 
 
@@ -25,7 +25,7 @@ def test_create_nodes_report_defaults(kg_report_nodes_1, nodes_report_expected):
 
     assert type(nodes_report) is list
     assert len(nodes_report) == 4
-    check_report_values(nodes_report, nodes_report_expected)
+    check_report_data(nodes_report, nodes_report_expected)
 
 
 def test_create_nodes_report_list(kg_report_nodes_1, nodes_report_expected):
@@ -33,7 +33,7 @@ def test_create_nodes_report_list(kg_report_nodes_1, nodes_report_expected):
 
     assert type(nodes_report) is list
     assert len(nodes_report) == 4
-    check_report_values(nodes_report, nodes_report_expected)
+    check_report_data(nodes_report, nodes_report_expected)
 
 
 def test_create_nodes_report_dict(kg_report_nodes_1, nodes_report_expected):
@@ -41,4 +41,4 @@ def test_create_nodes_report_dict(kg_report_nodes_1, nodes_report_expected):
 
     assert type(nodes_report) is dict
     assert len(nodes_report) == 4
-    check_report_values(nodes_report.values(), nodes_report_expected)
+    check_report_data(nodes_report.values(), nodes_report_expected)

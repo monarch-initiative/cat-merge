@@ -35,6 +35,6 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("flags", flags_params().values(), ids=list(flags_params().keys()))
 
 
-def check_report_values(report_values, expected_values):
-    for val, expect in zip_longest(report_values, expected_values):
-        assert val == expect
+def check_report_data(report_values, expected_values):
+    for returned, expected in zip_longest(report_values, expected_values):
+        assert returned == expected

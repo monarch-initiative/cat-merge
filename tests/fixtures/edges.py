@@ -1,5 +1,6 @@
 import pytest
 import pandas as pd
+from cat_merge.qc_utils import cols_fill_na
 from tests.test_utils import string_df
 
 
@@ -19,6 +20,13 @@ def edges1() -> pd.DataFrame:
     return string_df(edges).astype('string')
 
 
+@pytest.fixture
 def kg_edges_1() -> pd.DataFrame:
     edges = pd.read_csv("tests/test_data/test_kg_edges.tsv", sep="\t")
+    return edges.astype('string')
+
+
+@pytest.fixture
+def kg_report_edges_1(kg_edges_1) -> pd.DataFrame:
+    edges = cols_fill_na(kg_edges_1, {'in_taxon': 'missing taxon', 'category': 'missing category'})
     return edges.astype('string')

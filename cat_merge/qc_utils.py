@@ -34,7 +34,7 @@ def create_predicate_report(
         data_type: type = list,
         group_by: str = "predicate"
 ) -> Union[List[Dict], Dict]:
-    predicates = ReportContainer(data_type)
+    predicates = ReportContainer(data_type, key_name='uri')
     predicate_group = edges_grouped_by_values.groupby([group_by])[['id', 'object', 'subject', 'category']]
     for predicate, predicate_values in predicate_group:
         predicate_object = {

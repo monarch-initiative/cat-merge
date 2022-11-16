@@ -100,7 +100,7 @@ def create_edges_report(
     edges_group = edges.groupby([group_by])[['id', 'object', 'subject', 'predicate', 'category']]
     for edges_grouped_by, edges_grouped_by_values in edges_group:
         edge_object = create_edge_report(edges_grouped_by, edges_grouped_by_values, nodes["id"])
-        edge_object["predicates"] = create_predicate_report(edges_grouped_by_values, nodes["id"], data_type, group_by)
+        edge_object["predicates"] = create_predicate_report(edges_grouped_by_values, nodes["id"], data_type)
         edge_object["node_types"] = create_edge_node_types_report(edges_grouped_by_values, nodes, data_type, group_by)
         edges_report.add(edge_object)
     return edges_report.data

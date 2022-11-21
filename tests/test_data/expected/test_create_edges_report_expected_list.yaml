@@ -1,0 +1,212 @@
+- name: hpoa_disease_mode_of_inheritance_edges
+  namespaces:
+  - HP
+  - MONDO
+  categories:
+  - biolink:DiseaseOrPhenotypicFeatureToGeneticInheritanceAssociation
+  total_number: 2
+  missing_old: 0
+  missing: 0
+  predicates:
+  - uri: biolink:has_mode_of_inheritance
+    total_number: 2
+    missing_subjects: 0
+    missing_objects: 0
+    missing_subject_namespaces: []
+    missing_object_namespaces: []
+  node_types:
+  - name: phenio_nodes
+    categories:
+    - biolink:Disease
+    - biolink:PhenotypicFeature
+    namespaces:
+    - HP
+    - MONDO
+    total_number: 4
+    missing: 4
+    taxon:
+    - missing taxon
+- name: hpoa_disease_phenotype_edges
+  namespaces:
+  - HP
+  - MONDO
+  categories:
+  - biolink:DiseaseToPhenotypicFeatureAssociation
+  total_number: 2
+  missing_old: 0
+  missing: 0
+  predicates:
+  - uri: biolink:has_phenotype
+    total_number: 2
+    missing_subjects: 0
+    missing_objects: 0
+    missing_subject_namespaces: []
+    missing_object_namespaces: []
+  node_types:
+  - name: phenio_nodes
+    categories:
+    - biolink:Disease
+    - biolink:PhenotypicFeature
+    namespaces:
+    - HP
+    - MONDO
+    total_number: 3
+    missing: 3
+    taxon:
+    - missing taxon
+- name: omim_gene_to_disease_edges
+  namespaces:
+  - HGNC
+  - MONDO
+  categories:
+  - biolink:GeneToDiseaseAssociation
+  total_number: 2
+  missing_old: 0
+  missing: 0
+  predicates:
+  - uri: biolink:gene_associated_with_condition
+    total_number: 2
+    missing_subjects: 0
+    missing_objects: 0
+    missing_subject_namespaces: []
+    missing_object_namespaces: []
+  node_types:
+  - name: hgnc_gene_nodes
+    categories:
+    - biolink:Gene
+    namespaces:
+    - HGNC
+    total_number: 2
+    missing: 2
+    taxon:
+    - NCBITaxon:9606
+  - name: phenio_nodes
+    categories:
+    - biolink:Disease
+    namespaces:
+    - MONDO
+    total_number: 2
+    missing: 2
+    taxon:
+    - missing taxon
+- name: panther_genome_orthologs_edges
+  namespaces:
+  - HGNC
+  - NCBIGene
+  categories:
+  - biolink:GeneToGeneHomologyAssociation
+  total_number: 2
+  missing_old: 0
+  missing: 0
+  predicates:
+  - uri: biolink:orthologous_to
+    total_number: 2
+    missing_subjects: 0
+    missing_objects: 0
+    missing_subject_namespaces: []
+    missing_object_namespaces: []
+  node_types:
+  - name: hgnc_gene_nodes
+    categories:
+    - biolink:Gene
+    namespaces:
+    - HGNC
+    total_number: 1
+    missing: 1
+    taxon:
+    - NCBITaxon:9606
+  - name: ncbi_gene_nodes
+    categories:
+    - biolink:Gene
+    namespaces:
+    - NCBIGene
+    total_number: 2
+    missing: 2
+    taxon:
+    - NCBITaxon:9823
+    - NCBITaxon:9913
+- name: phenio_edges
+  namespaces:
+  - MONDO
+  categories:
+  - missing category
+  total_number: 2
+  missing_old: 0
+  missing: 0
+  predicates:
+  - uri: biolink:subclass_of
+    total_number: 2
+    missing_subjects: 0
+    missing_objects: 0
+    missing_subject_namespaces: []
+    missing_object_namespaces: []
+  node_types:
+  - name: phenio_nodes
+    categories:
+    - biolink:Disease
+    namespaces:
+    - MONDO
+    total_number: 3
+    missing: 3
+    taxon:
+    - missing taxon
+- name: reactome_gene_to_pathway_edges
+  namespaces:
+  - HGNC
+  - REACT
+  categories:
+  - biolink:GeneToPathwayAssociation
+  total_number: 2
+  missing_old: 0
+  missing: 0
+  predicates:
+  - uri: biolink:participates_in
+    total_number: 2
+    missing_subjects: 0
+    missing_objects: 0
+    missing_subject_namespaces: []
+    missing_object_namespaces: []
+  node_types:
+  - name: hgnc_gene_nodes
+    categories:
+    - biolink:Gene
+    namespaces:
+    - HGNC
+    total_number: 2
+    missing: 2
+    taxon:
+    - NCBITaxon:9606
+  - name: reactome_pathway_nodes
+    categories:
+    - biolink:Pathway
+    namespaces:
+    - REACT
+    total_number: 2
+    missing: 2
+    taxon:
+    - NCBITaxon:9606
+- name: string_protein_links_edges
+  namespaces:
+  - HGNC
+  categories:
+  - biolink:PairwiseGeneToGeneInteraction
+  total_number: 2
+  missing_old: 0
+  missing: 0
+  predicates:
+  - uri: biolink:interacts_with
+    total_number: 2
+    missing_subjects: 0
+    missing_objects: 0
+    missing_subject_namespaces: []
+    missing_object_namespaces: []
+  node_types:
+  - name: hgnc_gene_nodes
+    categories:
+    - biolink:Gene
+    namespaces:
+    - HGNC
+    total_number: 3
+    missing: 3
+    taxon:
+    - NCBITaxon:9606

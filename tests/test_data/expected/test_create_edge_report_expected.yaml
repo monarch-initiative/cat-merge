@@ -1,0 +1,82 @@
+hpoa_disease_mode_of_inheritance_edges:
+  categories:
+  - biolink:DiseaseOrPhenotypicFeatureToGeneticInheritanceAssociation
+  missing: 0
+  missing_old: 0
+  name: hpoa_disease_mode_of_inheritance_edges
+  namespaces:
+  - HP
+  - MONDO
+  node_types: []
+  predicates: []
+  total_number: 2
+hpoa_disease_phenotype_edges:
+  categories:
+  - biolink:DiseaseToPhenotypicFeatureAssociation
+  missing: 0
+  missing_old: 0
+  name: hpoa_disease_phenotype_edges
+  namespaces:
+  - HP
+  - MONDO
+  node_types: []
+  predicates: []
+  total_number: 2
+omim_gene_to_disease_edges:
+  categories:
+  - biolink:GeneToDiseaseAssociation
+  missing: 0
+  missing_old: 0
+  name: omim_gene_to_disease_edges
+  namespaces:
+  - HGNC
+  - MONDO
+  node_types: []
+  predicates: []
+  total_number: 2
+panther_genome_orthologs_edges:
+  categories:
+  - biolink:GeneToGeneHomologyAssociation
+  missing: 0
+  missing_old: 0
+  name: panther_genome_orthologs_edges
+  namespaces:
+  - HGNC
+  - NCBIGene
+  node_types: []
+  predicates: []
+  total_number: 2
+phenio_edges:
+  categories:
+  - missing category
+  missing: 0
+  missing_old: 0
+  name: phenio_edges
+  namespaces:
+  - MONDO
+  node_types: []
+  predicates: []
+  total_number: 2
+reactome_gene_to_pathway_edges:
+  categories:
+  - biolink:GeneToPathwayAssociation
+  missing: 0
+  missing_old: 0
+  name: reactome_gene_to_pathway_edges
+  namespaces:
+  - HGNC
+  - REACT
+  node_types: []
+  predicates: []
+  total_number: 2
+string_protein_links_edges:
+  categories:
+  - biolink:PairwiseGeneToGeneInteraction
+  missing: 0
+  missing_old: 0
+  name: string_protein_links_edges
+  namespaces:
+  - HGNC
+  node_types: []
+  predicates: []
+  total_number: 2

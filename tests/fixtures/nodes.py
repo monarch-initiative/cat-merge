@@ -1,14 +1,6 @@
 import pytest
 import pandas as pd
 from cat_merge.qc_utils import cols_fill_na
-from tests.test_utils import string_df
-
-
-# @pytest.fixture
-# def nodes1() -> pd.DataFrame:
-#     nodes = u"""\
-#         """
-#     return string_df(nodes).astype('string')
 
 
 @pytest.fixture

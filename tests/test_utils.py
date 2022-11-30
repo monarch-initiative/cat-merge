@@ -1,6 +1,7 @@
 import copy
 import pandas as pd
 from io import StringIO
+from itertools import zip_longest
 
 import pytest
 from pandas.core.frame import DataFrame
@@ -32,3 +33,8 @@ def flags_params():
 def pytest_generate_tests(metafunc):
     if "flags" in metafunc.fixturenames:
         metafunc.parametrize("flags", flags_params().values(), ids=list(flags_params().keys()))
+
+
+def check_report_data(report_values, expected_values):
+    for returned, expected in zip_longest(report_values, expected_values):
+        assert returned == expected

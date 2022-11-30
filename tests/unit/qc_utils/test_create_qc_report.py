@@ -21,13 +21,13 @@ def qc_report_expected_dict() -> Dict:
     return report_values
 
 
-def test_create_qc_report_defaults(kg_1, qc_report_expected_list):
+def test_create_qc_report_defaults(kg_1, qc_report_expected_dict):
     test_report = create_qc_report(kg_1)
 
     assert type(test_report) is dict
     assert len(test_report) == 4
-    check_report_data(test_report.keys(), qc_report_expected_list.keys())
-    check_report_data(test_report.values(), qc_report_expected_list.values())
+    check_report_data(test_report.keys(), qc_report_expected_dict.keys())
+    check_report_data(test_report.values(), qc_report_expected_dict.values())
 
 
 def test_create_qc_report_list(kg_1, qc_report_expected_list):

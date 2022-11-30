@@ -31,7 +31,7 @@ def get_missing(edges: pd.DataFrame, cols: List[str], ids: pd.Series) -> pd.Seri
 def create_predicate_report(
         edges_grouped_by_values: pd.DataFrame,
         node_ids: pd.Series,
-        data_type: type = list,
+        data_type: type = dict,
         group_by: str = "predicate"
 ) -> Union[List[Dict], Dict]:
     predicates = ReportContainer(data_type, key_name='uri')
@@ -54,7 +54,7 @@ def create_predicate_report(
 def create_edge_node_types_report(
         edges_grouped_by_values: pd.DataFrame,
         nodes: pd.DataFrame,
-        data_type: type = list,
+        data_type: type = dict,
         group_by: str = "provided_by"
 ) -> Union[List[Dict], Dict]:
     node_types = ReportContainer(data_type)
@@ -90,7 +90,7 @@ def create_edge_node_types_report(
 def create_edges_report(
         edges: pd.DataFrame,
         nodes: pd.DataFrame,
-        data_type: type = list,
+        data_type: type = dict,
         group_by: str = "provided_by"
 ) -> Union[List[Dict], Dict]:
     edges_report = ReportContainer(data_type)
@@ -121,7 +121,7 @@ def get_missing_old(cols: List[pd.Series], ids: pd.Series) -> List[str]:
 
 
 class ReportContainer:
-    def __init__(self, data_type: type = list, key_name: str = 'name'):
+    def __init__(self, data_type: type = dict, key_name: str = 'name'):
         self.data_type = data_type
         self.key_name = key_name
         match data_type:
@@ -155,7 +155,7 @@ class ReportContainer:
 
 def create_nodes_report(
         nodes: pd.DataFrame,
-        data_type: type = list,
+        data_type: type = dict,
         group_by: str = "provided_by"
 ) -> Union[List[Dict], Dict]:
     node_report = ReportContainer(data_type)
@@ -204,7 +204,7 @@ def get_difference(a: Union[List, pd.Series], b: Union[List, pd.Series]) -> Unio
     return s if type(a) is list else pd.Series(s, dtype=a.dtype, name=a.name)
 
 
-def create_qc_report(kg: MergedKG, data_type: type = list, group_by: str = "provided_by") -> Dict:
+def create_qc_report(kg: MergedKG, data_type: type = dict, group_by: str = "provided_by") -> Dict:
     """
     interface for generating qc report from merged kg
     :param kg: a MergeKG with data to create QC report

@@ -23,9 +23,9 @@ def nodes_report_expected() -> List[Dict]:
 def test_create_nodes_report_defaults(kg_report_nodes_1, nodes_report_expected):
     nodes_report = create_nodes_report(kg_report_nodes_1)
 
-    assert type(nodes_report) is list
+    assert type(nodes_report) is dict
     assert len(nodes_report) == 4
-    check_report_data(nodes_report, nodes_report_expected)
+    check_report_data(nodes_report.values(), nodes_report_expected)
 
 
 def test_create_nodes_report_list(kg_report_nodes_1, nodes_report_expected):

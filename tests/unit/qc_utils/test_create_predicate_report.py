@@ -54,18 +54,18 @@ def predicate_report_list_expected() -> Dict:
     return predicate_expected
 
 
-def test_create_predicate_report_defaults(kg_report_edges_1, kg_report_nodes_1, predicate_report_list_expected):
+def test_create_predicate_report_defaults(kg_report_edges_1, kg_report_nodes_1, predicate_report_dict_expected):
     # TODO: Long-term group_by will be generated test-set like 'flags'
     edges_group = kg_report_edges_1.groupby(["provided_by"])[['id', 'object', 'subject', 'predicate', 'category']]
     predicate_reports = []
     for edges_grouped_by, edges_grouped_by_values in edges_group:
-        predicate_report = create_predicate_report(edges_grouped_by_values, kg_report_nodes_1["id"])
-        assert type(predicate_report) is list
+        predicate_report = create_predicate_report(edges_grouped_by_values, kg_report_nodes_1["id"], data_type=dict)
+        assert type(predicate_report) is dict
         assert len(predicate_report) == 1
-        assert len(predicate_report[0]) == 6
+        # assert len(predicate_report[0]) == 6
         predicate_reports.append(predicate_report)
 
-    check_report_data(predicate_reports, predicate_report_list_expected)
+    check_report_data(predicate_reports, predicate_report_dict_expected)
 
 
 def test_create_predicate_report_list(kg_report_edges_1, kg_report_nodes_1, predicate_report_list_expected):

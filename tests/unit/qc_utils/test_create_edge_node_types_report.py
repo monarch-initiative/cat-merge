@@ -61,16 +61,16 @@ def edge_node_types_report_expected_list() -> List:
 
 
 def test_create_edge_node_types_report_defaults(
-        kg_report_edges_1, kg_report_nodes_1, edge_node_types_report_expected_list):
+        kg_report_edges_1, kg_report_nodes_1, edge_node_types_report_expected_dict):
     # TODO: Long-term group_by will be generated test-set like 'flags'
     edges_group = kg_report_edges_1.groupby(["provided_by"])[['id', 'object', 'subject', 'predicate', 'category']]
     all_reports = []
     for edges_grouped_by, edges_grouped_by_values in edges_group:
-        report = create_edge_node_types_report(edges_grouped_by_values, kg_report_nodes_1)
-        assert type(report) is list
+        report = create_edge_node_types_report(edges_grouped_by_values, kg_report_nodes_1, data_type=dict)
+        assert type(report) is dict
         all_reports.append(report)
 
-    check_report_data(all_reports, edge_node_types_report_expected_list)
+    check_report_data(all_reports, edge_node_types_report_expected_dict)
 
 
 def test_create_edge_node_types_report_list(

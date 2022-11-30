@@ -24,12 +24,12 @@ def edges_report_expected_dict() -> Dict:
     return report_values
 
 
-def test_create_edges_report_defaults(kg_report_edges_1, kg_report_nodes_1, edges_report_expected_list):
-    test_report = create_edges_report(kg_report_edges_1, kg_report_nodes_1)
+def test_create_edges_report_defaults(kg_report_edges_1, kg_report_nodes_1, edges_report_expected_dict):
+    test_report = create_edges_report(kg_report_edges_1, kg_report_nodes_1, data_type=dict)
 
-    assert type(test_report) is list
+    assert type(test_report) is dict
     assert len(test_report) == 7
-    check_report_data(test_report, edges_report_expected_list)
+    check_report_data(test_report, edges_report_expected_dict)
 
 
 def test_create_edges_report_list(kg_report_edges_1, kg_report_nodes_1, edges_report_expected_list):

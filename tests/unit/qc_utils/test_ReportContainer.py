@@ -4,18 +4,18 @@ from cat_merge.qc_utils import ReportContainer
 
 def test_report_container_no_args():
     rc = ReportContainer()
-    assert rc.data_type == list
+    assert rc.data_type == dict
     assert rc.key_name == 'name'
-    assert type(rc.data) == list
-    assert rc.data == []
+    assert type(rc.data) == dict
+    assert rc.data == {}
 
 
 def test_report_container_key_only():
     rc = ReportContainer(key_name='other')
-    assert rc.data_type == list
+    assert rc.data_type == dict
     assert rc.key_name == 'other'
-    assert type(rc.data) == list
-    assert rc.data == []
+    assert type(rc.data) == dict
+    assert rc.data == {}
 
 
 @pytest.mark.parametrize("data_type,expected", [

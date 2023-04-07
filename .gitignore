@@ -1,3 +1,5 @@
+mappings/
+
 # since this is a library, adding poetry.lock
 poetry.lock
 

@@ -1,20 +1,24 @@
-id	category	name	description	xref	provided_by	in_taxon	source	symbol	synonyms	type	synonym
-HP:0000006	biolink:PhenotypicFeature	Autosomal dominant inheritance (HPO)	A mode of inheritance that is observed for traits related to a gene encoded on one of the autosomes (i.e., the human chromosomes 1-22) in which a trait manifests in heterozygotes. In the context of medical genetics, an autosomal dominant disorder is caused when a single copy of the mutant allele is present. Males and females are affected equally, and can both transmit the disorder with a risk of 50% for each child of inheriting the mutant allele.		phenio_nodes						
-HP:0000007	biolink:PhenotypicFeature	Autosomal recessive inheritance (HPO)	A mode of inheritance that is observed for traits related to a gene encoded on one of the autosomes (i.e., the human chromosomes 1-22) in which a trait manifests in individuals with two pathogenic alleles, either homozygotes (two copies of the same mutant allele) or compound heterozygotes (whereby each copy of a gene has a distinct mutant allele).		phenio_nodes						
-HP:0001081	biolink:PhenotypicFeature	Cholelithiasis (HPO)	Hard, pebble-like deposits that form within the gallbladder.		phenio_nodes						
-HP:0002904	biolink:PhenotypicFeature	Hyperbilirubinemia (HPO)	An increased amount of bilirubin in the blood.		phenio_nodes						
-MONDO:0003689	biolink:Disease	familial hemolytic anemia	A congenital hemolytic anemia caused by defects of the erythrocyte membrane, enzyme deficiencies, or hemoglobinopathies.		phenio_nodes						
-MONDO:0009260	biolink:Disease	GM1 gangliosidosis type 1	GM1 gangliosidosis type 1 is the severe infantile form of GM1 gangliosidosis with variable neurological and systemic manifestations.		phenio_nodes						
-MONDO:0009340	biolink:Disease	non-spherocytic hemolytic anemia due to hexokinase deficiency	Nonspherocytic hemolytic anemia due to hexokinase deficiency (NSHA due to HK1 deficiency) is a very rare conditionmainly characterized by severe, chronic hemolysis, beginning in infancy. Approximately 20 cases of this condition have been described to date. Signs and symptoms of hexokinase deficiency are very similar to those of pyruvate kinase deficiency but anemia is generally more severe. Some affected individuals reportedly have had various abnormalities in addition to NSHA including multiple malformations, panmyelopathy, and latent diabetes.Itcan be caused by mutations in the HK1 gene and is inherited in an autosomal recessive manner. Treatment may include red cell transfusions for those with severe anemia.		phenio_nodes						
-MONDO:0017688	biolink:Disease	disorder of glycolysis			phenio_nodes						
-MONDO:0020777	biolink:Disease	congenital disorder of glycosylation with defective fucosylation 2			phenio_nodes						
-MONDO:0032807	biolink:Disease	neurodevelopmental disorder with visual defects and brain anomalies			phenio_nodes						
-HGNC:29500	biolink:Gene	fucose kinase		ENSEMBL:ENSG00000157353|OMIM:608675	hgnc_gene_nodes	NCBITaxon:9606		FCSK			FLJ39408|L-fucose kinase|FUK|fucokinase
-HGNC:4298	biolink:Gene	galactosidase beta 1		ENSEMBL:ENSG00000170266|OMIM:611458	hgnc_gene_nodes	NCBITaxon:9606		GLB1			EBP|elastin binding protein|ELNR1|elastin receptor 1, 67kDa|elastin receptor 1 (67kD)|galactosidase, beta 1
-HGNC:4922	biolink:Gene	hexokinase 1		ENSEMBL:ENSG00000156515|OMIM:142600	hgnc_gene_nodes	NCBITaxon:9606		HK1			
-HGNC:4925	biolink:Gene	hexokinase 3		ENSEMBL:ENSG00000160883|OMIM:142570	hgnc_gene_nodes	NCBITaxon:9606		HK3			hexokinase 3 (white cell)
-HGNC:6315	biolink:Gene	ketohexokinase		ENSEMBL:ENSG00000138030|OMIM:614058	hgnc_gene_nodes	NCBITaxon:9606		KHK			fructokinase|ketohexokinase (fructokinase)
-NCBIGene:100152344	biolink:Gene		hexokinase 1		ncbi_gene_nodes	NCBITaxon:9823		HK1			
-NCBIGene:280817	biolink:Gene		hexokinase 1		ncbi_gene_nodes	NCBITaxon:9913		HK1			
-REACT:R-HSA-6787639	biolink:Pathway	GDP-fucose biosynthesis			reactome_pathway_nodes	NCBITaxon:9606					
-REACT:R-HSA-1660662	biolink:Pathway	Glycosphingolipid metabolism			reactome_pathway_nodes	NCBITaxon:9606					
+id	category	name	description	provided_by
+MESH:D004194	biolink:Disease			Graph
+MESH:D004198	biolink:Disease			Graph
+CHEBI:100147	biolink:MolecularEntity	nalidixic acid	A monocarboxylic acid comprising 1,8-naphthyridin-4-one substituted by carboxylic acid, ethyl and methyl groups at positions 3, 1, and 7, respectively. An orally administered antibacterial, it is used in the treatment of lower urinary-tract infections due to Gram-negative bacteria, including the majority of E. coli, Enterobacter, Klebsiella, and Proteus species.	Graph
+CHEBI:10023	biolink:MolecularEntity	voriconazole	A triazole-based antifungal agent used for the treatment of esophageal candidiasis, invasive pulmonary aspergillosis, and serious fungal infections caused by Scedosporium apiospermum and Fusarium spp. It is an inhibitor of cytochrome P450 2C9 (CYP2C9) and CYP3A4.	Graph
+CHEBI:100241	biolink:MolecularEntity	ciprofloxacin	A  quinolone that is quinolin-4(1H)-one bearing cyclopropyl, carboxylic acid, fluoro and piperazin-1-yl substituents at positions 1, 3, 6 and 7, respectively.	Graph
+CHEBI:25384	biolink:MolecularEntity	monocarboxylic acid	An oxoacid containing a single carboxy group.	Graph
+CHEBI:73537	biolink:MolecularEntity	1,8-naphthyridine derivative	Any naphthyridine derivative that is a derivative of 1,8-naphthyridine.	Graph
+CHEBI:86324	biolink:MolecularEntity	quinolone antibiotic	An organonitrogen heterocyclic antibiotic whose structure contains a quinolone or quinolone-related skeleton.	Graph
+CHEBI:33281	biolink:biological_role_mixin	antimicrobial agent	A substance that kills or slows the growth of microorganisms, including bacteria, viruses, fungi and protozoans.	Graph
+CHEBI:36047	biolink:biological_role_mixin	antibacterial drug	A drug used to treat or prevent bacterial infections.	Graph
+CHEBI:59517	biolink:biological_role_mixin	DNA synthesis inhibitor	Any substance that inhibits the synthesis of DNA.	Graph
+CHEBI:62070	biolink:MolecularEntity	nalidixic acid anion	A monocarboxylic acid anion that is the conjugate base of nalidixic acid; major species at pH 7.3.	Graph
+CHEBI:26878	biolink:MolecularEntity	tertiary alcohol	A tertiary alcohol is a compound in which a hydroxy group, -OH, is attached to a saturated carbon atom which has three other carbon atoms attached to it.	Graph
+CHEBI:38582	biolink:MolecularEntity	difluorobenzene	Any member of the class of fluorobenzenes containing a mono- or poly-substituted benzene ring carrying two fluorine atoms.	Graph
+CHEBI:39447	biolink:MolecularEntity	pyrimidines	Any compound having a pyrimidine as part of its structure.	Graph
+CHEBI:87071	biolink:MolecularEntity	conazole antifungal drug	Any conazole antifungal agent that has been used for the treatment of fungal infections in animals or humans.	Graph
+CHEBI:87101	biolink:MolecularEntity	triazole antifungal drug	Any triazole antifungal agent that has been used for the treatment of fungal infections in humans or animals.	Graph
+CHEBI:50183	biolink:biological_role_mixin	P450 inhibitor	An enzyme inhibitor that interferes with the activity of cytochrome P450 involved in catalysis of organic substances.	Graph
+CHEBI:23765	biolink:MolecularEntity	quinolone		Graph
+CHEBI:26512	biolink:MolecularEntity	quinolinemonocarboxylic acid	Any aromatic carboxylic acid that contains a quinoline moiety that is substituted by one carboxy substituent.	Graph
+CHEBI:36709	biolink:MolecularEntity	aminoquinoline	Any member of the class of quinolines in which the quinoline skeleton is substituted by one or more amino or substituted-amino groups.	Graph
+CHEBI:46848	biolink:MolecularEntity	N-arylpiperazine		Graph
+CHEBI:51454	biolink:MolecularEntity	cyclopropanes	Cyclopropane and its derivatives formed by substitution.	Graph

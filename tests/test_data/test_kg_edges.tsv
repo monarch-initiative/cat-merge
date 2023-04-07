@@ -1,15 +1,20 @@
-id	original_subject	predicate	original_object	category	aggregator_knowledge_source	primary_knowledge_source	provided_by	has_evidence	negated	frequency_qualifier	onset_qualifier	publications	sex_qualifier	qualifiers	relation	knowledge_source	stage_qualifier	subject	object
-uuid:65d0a5d7-4d46-11ed-b384-ad00dd9ee194	OMIM:235700	biolink:has_phenotype		biolink:DiseaseToPhenotypicFeatureAssociation	infores:monarchinitiative	infores:hpoa	hpoa_disease_phenotype_edges	ECO:0000304				OMIM:235700						MONDO:0009340	HP:0002904
-uuid:65d0a5d8-4d46-11ed-b384-ad00dd9ee194	OMIM:235700	biolink:has_phenotype		biolink:DiseaseToPhenotypicFeatureAssociation	infores:monarchinitiative	infores:hpoa	hpoa_disease_phenotype_edges	ECO:0000501				OMIM:235700						MONDO:0009340	HP:0001081
-urn:uuid:813eb1a3-bbfd-4c19-aef9-2ed46b04f47d		biolink:subclass_of					phenio_edges								rdfs:subClassOf	Graph		MONDO:0009340	MONDO:0003689
-urn:uuid:1189c84c-59c2-41bb-b087-b939d4c1d5cc		biolink:subclass_of					phenio_edges								rdfs:subClassOf	Graph		MONDO:0009340	MONDO:0017688
-uuid:ac6ee513-4d48-11ed-b384-ad00dd9ee194	OMIM:608675	biolink:gene_associated_with_condition	OMIM:618324	biolink:GeneToDiseaseAssociation	infores:monarchinitiative	infores:omim	omim_gene_to_disease_edges	ECO:0000220										HGNC:29500	MONDO:0020777
-uuid:aca8b0db-4d48-11ed-b384-ad00dd9ee194	OMIM:611458	biolink:gene_associated_with_condition	OMIM:230500	biolink:GeneToDiseaseAssociation	infores:monarchinitiative	infores:omim	omim_gene_to_disease_edges	ECO:0000220										HGNC:4298	MONDO:0009260
-uuid:a7e327d5-4d46-11ed-b384-ad00dd9ee194	OMIM:235700	biolink:has_mode_of_inheritance		biolink:DiseaseOrPhenotypicFeatureToGeneticInheritanceAssociation	infores:monarchinitiative	infores:hpoa	hpoa_disease_mode_of_inheritance_edges	ECO:0000269				PMID:7655856						MONDO:0009340	HP:0000007
-uuid:a9650e43-4d46-11ed-b384-ad00dd9ee194	OMIM:618547	biolink:has_mode_of_inheritance		biolink:DiseaseOrPhenotypicFeatureToGeneticInheritanceAssociation	infores:monarchinitiative	infores:hpoa	hpoa_disease_mode_of_inheritance_edges	ECO:0000269				PMID:30778173						MONDO:0032807	HP:0000006
-uuid:4b53cab4-4d7a-11ed-b384-ad00dd9ee194	NCBIGene:197258	biolink:interacts_with	NCBIGene:3795	biolink:PairwiseGeneToGeneInteraction	infores:monarchinitiative	infores:string	string_protein_links_edges											HGNC:29500	HGNC:6315
-uuid:4b53cab5-4d7a-11ed-b384-ad00dd9ee194	NCBIGene:197258	biolink:interacts_with	NCBIGene:3101	biolink:PairwiseGeneToGeneInteraction	infores:monarchinitiative	infores:string	string_protein_links_edges											HGNC:29500	HGNC:4925
-uuid:81a24bff-4d4b-11ed-b384-ad00dd9ee194		biolink:orthologous_to	ENSEMBL:ENSBTAG00000012380	biolink:GeneToGeneHomologyAssociation	infores:monarchinitiative	infores:panther	panther_genome_orthologs_edges	PANTHER.FAMILY:PTHR19443										HGNC:4922	NCBIGene:280817
-uuid:81a24c00-4d4b-11ed-b384-ad00dd9ee194		biolink:orthologous_to	ENSEMBL:ENSSSCG00000010253	biolink:GeneToGeneHomologyAssociation	infores:monarchinitiative	infores:panther	panther_genome_orthologs_edges	PANTHER.FAMILY:PTHR19443										HGNC:4922	NCBIGene:100152344
-uuid:e23e2ae9-4d79-11ed-b384-ad00dd9ee194	NCBIGene:197258	biolink:participates_in		biolink:GeneToPathwayAssociation	infores:monarchinitiative	infores:reactome	reactome_gene_to_pathway_edges											HGNC:29500	REACT:R-HSA-6787639
-uuid:e64c4b00-4d79-11ed-b384-ad00dd9ee194	NCBIGene:2720	biolink:participates_in		biolink:GeneToPathwayAssociation	infores:monarchinitiative	infores:reactome	reactome_gene_to_pathway_edges											HGNC:4298	REACT:R-HSA-1660662
+id	subject	predicate	object	category	relation	aggregator_knowledge_source	primary_knowledge_source
+urn:uuid:2eeb16e9-4003-4cda-97ae-e93680555e7f	CHEBI:100147	biolink:subclass_of	CHEBI:25384			infores:phenio	infores:chebi
+urn:uuid:3316b9ce-85ec-42bf-a0fc-bb35082ee039	CHEBI:100147	biolink:subclass_of	CHEBI:73537			infores:phenio	infores:chebi
+urn:uuid:ee5aca0d-2fd9-478b-b16b-4cd74814298c	CHEBI:100147	biolink:subclass_of	CHEBI:86324			infores:phenio	infores:chebi
+urn:uuid:6c86d50e-a526-43c4-8820-a810ae9f0453	CHEBI:100147	biolink:related_to	CHEBI:33281			infores:phenio	infores:chebi
+urn:uuid:0f7ab097-a540-4fcd-a05f-a36a29e64dc2	CHEBI:100147	biolink:related_to	CHEBI:36047			infores:phenio	infores:chebi
+urn:uuid:5e46b0d9-9cfe-4273-8584-3b5b70cb3acc	CHEBI:100147	biolink:related_to	CHEBI:59517			infores:phenio	infores:chebi
+urn:uuid:ef79cf95-f817-4fac-b742-876658c62335	CHEBI:100147	biolink:related_to	CHEBI:62070			infores:phenio	infores:chebi
+urn:uuid:dc96713d-b5ea-4633-ba53-331d54ebca91	CHEBI:10023	biolink:subclass_of	CHEBI:26878			infores:phenio	infores:chebi
+urn:uuid:b1c1c097-76a3-4c7a-90ef-9a087fcc2f81	CHEBI:10023	biolink:subclass_of	CHEBI:38582			infores:phenio	infores:chebi
+urn:uuid:6f4ba7fc-ad17-4d3b-af08-f7240ccdcdd4	CHEBI:10023	biolink:subclass_of	CHEBI:39447			infores:phenio	infores:chebi
+urn:uuid:6b0d10ac-ad90-44a3-ac56-dc863415c3cd	CHEBI:10023	biolink:subclass_of	CHEBI:87071			infores:phenio	infores:chebi
+urn:uuid:593eed60-e9cc-40ca-9e1a-13dcc5f825aa	CHEBI:10023	biolink:subclass_of	CHEBI:87101			infores:phenio	infores:chebi
+urn:uuid:f89f81f0-0ae8-42ea-a07b-b0a391d91237	CHEBI:10023	biolink:related_to	CHEBI:50183			infores:phenio	infores:chebi
+urn:uuid:fef25241-368c-4eca-9067-e7cfe4ca331b	CHEBI:100241	biolink:subclass_of	CHEBI:23765			infores:phenio	infores:chebi
+urn:uuid:721829ff-ba6a-4c5a-86ab-48bcacd7bd0c	CHEBI:100241	biolink:subclass_of	CHEBI:26512			infores:phenio	infores:chebi
+urn:uuid:83ef2fe7-1ed3-4c22-935d-65663ca4cfe3	CHEBI:100241	biolink:subclass_of	CHEBI:36709			infores:phenio	infores:chebi
+urn:uuid:ae654ce1-64de-4639-a33d-25912262b0f2	CHEBI:100241	biolink:subclass_of	CHEBI:46848			infores:phenio	infores:chebi
+urn:uuid:2ba7c9b6-909d-4272-9f5d-a8f4fd5b43cf	CHEBI:100241	biolink:subclass_of	CHEBI:51454			infores:phenio	infores:chebi
+urn:uuid:dfa0997b-df1f-4290-a0bf-840dd6781c37	CHEBI:100241	biolink:subclass_of	CHEBI:86324			infores:phenio	infores:chebi

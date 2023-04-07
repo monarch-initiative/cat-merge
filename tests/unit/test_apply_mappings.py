@@ -44,6 +44,7 @@ def test_original_subject_and_object(edges, mapping):
     assert value(mapped_edges, 'uuid:3', 'original_object') == 'XDisease:3'
     assert value(mapped_edges, 'uuid:4', 'original_object') == 'XDisease:4'
 
+
 def test_no_extra_columns(edges, mapping):
     edge_columns = list(edges.columns)
     mapped_edges = apply_mappings(edges, mapping)

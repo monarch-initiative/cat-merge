@@ -1,13 +1,16 @@
+import os
 import tarfile
+from typing import List
 
 import yaml
 import logging
 
-from cat_merge.file_utils import *
-from cat_merge.merge_utils import *
+from cat_merge.file_utils import read_dfs, read_tar_dfs, get_files, write
+from cat_merge.merge_utils import merge_kg
 from cat_merge.qc_utils import create_qc_report
 
 log = logging.getLogger(__name__)
+
 
 def merge(
         name: str = "merged-kg",
@@ -57,7 +60,7 @@ Merging KG files...
         mapping_dfs = read_dfs(mappings, add_source_col=None)
 
     print("Merging...")
-    kg = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping_dfs=mapping_dfs, merge_delimiter=merge_delimiter)
+    kg, qc = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping_dfs=mapping_dfs, merge_delimiter=merge_delimiter)
     write(
         name=name,
         kg=kg,
@@ -66,7 +69,7 @@ Merging KG files...
 
     if qc_report:
         print("Generating QC report")
-        qc_report = create_qc_report(kg)
+        qc_report = create_qc_report(kg, qc)
 
         with open(f"{output_dir}/qc_report.yaml", "w") as report_file:
             yaml.dump(qc_report, report_file)

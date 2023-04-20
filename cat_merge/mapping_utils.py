@@ -3,7 +3,16 @@ from pandas.core.frame import DataFrame
 
 
 def apply_mappings(edges: DataFrame, mapping: DataFrame):
+    """
+    Apply SSSOM mappings to edges.
 
+    Args:
+        edges (pandas.DataFrame): DataFrame of edges.
+        mapping (pandas.DataFrame): DataFrame of SSSOM mappings.
+
+    Returns:
+        None
+    """
     edges.rename(columns={'subject':'original_subject'}, inplace=True)
     subject_mapping = mapping.rename(columns={'subject_id':'subject'})
     subject_mapping = subject_mapping[["subject","object_id"]]

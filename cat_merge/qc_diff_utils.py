@@ -3,8 +3,31 @@ from typing import Dict, List, Union
 
 
 def validate_diff_args(f):
+    """
+    Validate the arguments passed to diff_ functions
+
+    Params:
+        f: function to wrap for argument validation
+
+    Returns:
+        input function with argument validation
+    """
     @wraps(f)
     def wrapped_diff(*args, **kwargs):
+        """
+        Wrapped function with argument validation
+
+        Params:
+            *args: list of arguments
+            **kwargs: dictionary of keyword arguments
+
+        Returns:
+            result of wrapped function
+
+        Raises:
+            KeyError: if flags dict is missing keys or values are not bool
+            TypeError: if operands have different types
+        """
         a = kwargs.get("a") if len(args) < 1 else args[0]
         b = kwargs.get("b") if len(args) < 2 else args[1]
         flags = kwargs.get("flags") if len(args) < 3 else args[2]
@@ -30,6 +53,17 @@ def validate_diff_args(f):
 
 # @validate_diff_args
 def diff_yaml(a_yaml: Dict, b_yaml: Dict, show_all: bool) -> Dict:
+    """
+    Compare two yaml files
+
+    Params:
+        a_yaml: yaml file to compare
+        b_yaml: yaml file to compare
+        show_all: boolean to show all data or only differences
+
+    Returns:
+        Dict of differences
+    """
     flags = {'show_all': show_all, 'change': False}
 
     yaml_qc_compare = {}
@@ -43,7 +77,18 @@ def diff_yaml(a_yaml: Dict, b_yaml: Dict, show_all: bool) -> Dict:
 
 
 @validate_diff_args
-def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None], flags: Dict):
+def diff_elem(a: Union[Dict, List, None], b: Union[Dict, List, None], flags: Dict) -> Union[Dict, List, None]:
+    """
+    Compare two elements of a yaml file
+
+    Params:
+        a: element to compare
+        b: element to compare
+        flags: dict of flags to control comparison
+
+    Returns:
+        List or Dict of differences, or None if no differences
+    """
     node_compare = {}
     missing = ""
 
@@ -86,6 +131,17 @@ def diff_type(
         b: Union[List, Dict, str, int, None],
         flags: Dict
 ) -> Union[List, str, int, None]:
+    """
+    Compare two elements of a given type
+
+    Params:
+        a: element to compare
+        b: element to compare
+        flags: dict of flags to control comparison
+
+    Returns:
+        Dict, List, str, int of differences, or None if no differences
+    """
     diff: Union[Dict, List, int, str, None]
     case_type = a if a is not None else b
     match case_type:
@@ -111,6 +167,17 @@ def diff_type(
 
 @validate_diff_args
 def diff_dict(a: Union[Dict, None], b: Union[Dict, None], flags: Dict) -> Dict:
+    """
+    Compare two dictionaries
+
+    Params:
+        a: dict to compare
+        b: dict to compare
+        flags: dict of flags to control comparison
+
+    Returns:
+        Dict of differences
+    """
     if a is None or b is None:
         change = True
     else:
@@ -145,6 +212,17 @@ def diff_dict(a: Union[Dict, None], b: Union[Dict, None], flags: Dict) -> Dict:
 
 @validate_diff_args
 def diff_list(a: Union[List, None], b: Union[List, None], flags: Dict) -> List:
+    """
+    Compare two lists
+
+    Params:
+        a: list to compare
+        b: list to compare
+        flags: dict of flags to control comparison
+
+    Returns:
+        List of differences
+    """
     diff = []
     a = [] if a is None else a
     b = [] if b is None else b
@@ -171,6 +249,17 @@ def diff_list(a: Union[List, None], b: Union[List, None], flags: Dict) -> List:
 
 @validate_diff_args
 def diff_str(a: Union[str, None], b: Union[str, None], flags: Dict) -> Union[str, List, None]:
+    """
+    Compare two strings
+
+    Params:
+        a: string to compare
+        b: string to compare
+        flags: dict of flags to control comparison
+
+    Returns:
+        List or str of differences, or None if no differences
+    """
     flags["change"] = True
     diff: Union[str, List, None]
     if a == b:
@@ -190,6 +279,17 @@ def diff_str(a: Union[str, None], b: Union[str, None], flags: Dict) -> Union[str
 
 @validate_diff_args
 def diff_int(a: Union[int, None], b: Union[int, None], flags: Dict) -> Union[int, str, Dict, None]:
+    """
+    Compare two integers
+
+    Params:
+        a: integer to compare
+        b: integer to compare
+        flags: dict of flags to control comparison
+
+    Returns:
+        Dict, str, or int of differences, or None if no differences
+    """
     flags["change"] = True
     diff: Union[int, str, Dict, None]
     if a == b:
@@ -212,7 +312,15 @@ def diff_int(a: Union[int, None], b: Union[int, None], flags: Dict) -> Union[int
 
 
 def get_empty(x: Union[List, Dict, int, str]) -> Union[List, Dict, None]:
-    """Create an empty version of the given object"""
+    """
+    Create an empty copy of the given object
+
+    Params:
+        x: object to create an empty version of
+
+    Returns:
+        Empty copy of the object
+    """
     match x:
         case list():
             empty_list = []
@@ -240,6 +348,15 @@ def get_empty(x: Union[List, Dict, int, str]) -> Union[List, Dict, None]:
 
 
 def sources_dict(a: Union[Dict, List[Dict]]) -> Dict:
+    """
+    Convert a list of sources to a dictionary of sources
+
+    Params:
+        a: list of sources
+
+    Returns:
+        Dictionary of sources
+    """
     a_dict = {}
     match a:
         case dict():

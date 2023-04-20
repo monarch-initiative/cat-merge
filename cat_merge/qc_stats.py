@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 import yaml
 from grape import Graph  # type: ignore
 
@@ -6,11 +8,15 @@ def load_graph(name: str, version: str, edges_path: str,
                nodes_path: str) -> Graph:
     """
     Load a graph with Ensmallen (from grape).
-    :param name: OBO name
-    :param version: OBO version
-    :param edges_path: path to edge file
-    :param nodes_path: path to node file
-    :return: ensmallen Graph object
+
+    Params:
+        name (str): OBO Name of graph
+        version (str): OBO Version of graph
+        edges_path (str): Path to edge file
+        nodes_path (str): Path to node file
+
+    Returns:
+        ensmallen Graph object
     """
 
     loaded_graph = Graph.from_csv(name=f"{name}_version_{version}",
@@ -31,6 +37,15 @@ def load_graph(name: str, version: str, edges_path: str,
 
 
 def create_stats_report(g: Graph) -> List[Dict]:
+    """
+    Create a stats report for a graph.
+
+    Params:
+        g (Graph): Graph to create report for
+
+    Returns:
+        List of Dicts containing stats
+    """
     node_count = g.get_number_of_nodes()
     edge_count = g.get_number_of_edges()
     connected_components = g.get_number_of_connected_components()
@@ -48,7 +63,23 @@ def create_stats_report(g: Graph) -> List[Dict]:
     return [graph_stats]
 
 
-def qc_stats_report(nodes_file_name: str = None, edges_file_name: str = None):
+def qc_stats_report(
+        nodes_file_name: str = None,
+        edges_file_name: str = None,
+        output_dir: str = None,
+        output_name: str = "qc_stats_report.yaml"):
+    """
+    Generates a qc report for the knowledge graph
+
+    Params:
+        nodes_file_name (str): Path to node file
+        edges_file_name (str): Path to edge file
+        output_dir (str): Directory to output qc report
+        output_name (str): Name of qc report file (defaults to "qc_report.yaml")
+
+    Returns:
+        None
+    """
     g = load_graph(name="test_name",
                    version="0.1",
                    edges_path=edges_file_name,

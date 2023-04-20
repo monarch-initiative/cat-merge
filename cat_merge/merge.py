@@ -22,7 +22,22 @@ def merge(
         merge_delimiter: str = "|",  # Delimiter to use when merging categories and properties on duplicates
         qc_report: bool = True
 ):
+    """
+    Merges nodes and edges into a knowledge graph.
 
+    Args:
+        name (str): Output name of KG after merge.
+        source (str, optional): Optional directory or tar archive containing node and edge files.
+        nodes (List[str], optional): Optional list of node files.
+        edges (List[str], optional): Optional list of edge files.
+        mappings (List[str], optional): Optional list of SSSOM mapping files.
+        output_dir (str): Directory to output knowledge graph.
+        merge_delimiter (str, optional): Delimiter to use when merging categories and properties on duplicates.
+        qc_report (bool, optional): Boolean for whether to generate a qc report (defaults to True).
+
+    Returns:
+        None
+    """
     print(f"""\
 Merging KG files...
   name: {name} 
@@ -73,5 +88,3 @@ Merging KG files...
 
         with open(f"{output_dir}/qc_report.yaml", "w") as report_file:
             yaml.dump(qc_report, report_file)
-
-

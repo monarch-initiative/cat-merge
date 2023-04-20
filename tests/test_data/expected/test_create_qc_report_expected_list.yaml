@@ -249,3 +249,4 @@ edges:
     taxon:
     - NCBITaxon:9606
 dangling_edges: []
+duplicate_edges: []

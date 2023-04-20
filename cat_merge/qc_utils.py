@@ -1,7 +1,7 @@
 import pandas as pd
 # from grape import Graph  # type: ignore
 
-from cat_merge.model.merged_kg import MergedKG
+from cat_merge.model.merged_kg import MergedKG, MergeQC
 from typing import Dict, List, Union
 
 
@@ -204,10 +204,11 @@ def get_difference(a: Union[List, pd.Series], b: Union[List, pd.Series]) -> Unio
     return s if type(a) is list else pd.Series(s, dtype=a.dtype, name=a.name)
 
 
-def create_qc_report(kg: MergedKG, data_type: type = dict, group_by: str = "provided_by") -> Dict:
+def create_qc_report(kg: MergedKG, qc: MergeQC, data_type: type = dict, group_by: str = "provided_by") -> Dict:
     """
     interface for generating qc report from merged kg
     :param kg: a MergeKG with data to create QC report
+    :param qc: a MergeQC with qc data to create QC report
     :param data_type: str indicating mode for qc report generation
     :param group_by: str indicating which field for qc report grouping
     :return: a dictionary representing the QC report
@@ -216,9 +217,10 @@ def create_qc_report(kg: MergedKG, data_type: type = dict, group_by: str = "prov
     nodes = cols_fill_na(kg.nodes, {'in_taxon': 'missing taxon', 'category': 'missing category'})
     ingest_collection = {
         'nodes': create_nodes_report(nodes, data_type, group_by),
-        'duplicate_nodes': create_nodes_report(kg.duplicate_nodes, data_type, group_by),
+        'duplicate_nodes': create_nodes_report(qc.duplicate_nodes, data_type, group_by),
         'edges': create_edges_report(kg.edges, nodes, data_type, group_by),
-        'dangling_edges': create_edges_report(kg.dangling_edges, nodes, data_type, group_by)
+        'dangling_edges': create_edges_report(qc.dangling_edges, nodes, data_type, group_by),
+        'duplicate_edges': create_edges_report(qc.duplicate_edges, nodes, data_type, group_by)
     }
 
     return ingest_collection

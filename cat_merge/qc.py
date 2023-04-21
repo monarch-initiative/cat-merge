@@ -1,5 +1,5 @@
 import yaml
-from cat_merge.file_utils import read_kg
+from cat_merge.file_utils import read_kg, read_qc
 from cat_merge.qc_utils import create_qc_report
 from cat_merge.qc_diff_utils import diff_yaml
 
@@ -10,18 +10,13 @@ def qc_report(archive_path: str,
               output_name: str = "qc_report.yaml",
               data_type: type = list,
               group_by: str = "provided_by",
-              # add_provided_by: bool = True,
-              # reimplement these when we use grape stats
-              # dangling_edges: bool = True,
-              # dangling_edges_path: str = None,
-              # nodes_file_name: str = None,
-              # edges_file_name: str = None
               ):
     """
-    Generates a qc report for a knowledge graph
+    Generates a qc report for the knowledge graph
 
     Args:
         archive_path (str): Path to knowledge graph archive
+        qc_path (str): Path to qc report
         output_dir (str): Directory to output qc report
         output_name (str, optional): Name of qc report file (defaults to "qc_report.yaml")
         data_type (type, optional): Type of data to use for qc report (defaults to list)
@@ -31,8 +26,9 @@ def qc_report(archive_path: str,
         None
     """
     kg = read_kg(archive_path)
-    # report = create_qc_report(kg)
-    report = create_qc_report(kg, data_type, group_by)
+    qc = read_qc(qc_path)
+
+    report = create_qc_report(kg, qc, data_type, group_by)
 
     with open(f"{output_dir}/{output_name}", "w") as report_file:
         yaml.dump(report, report_file)

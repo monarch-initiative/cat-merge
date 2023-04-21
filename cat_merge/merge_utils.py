@@ -77,8 +77,7 @@ def get_dangling_edges(edges: DataFrame, nodes: DataFrame) -> DataFrame:
 
 def merge_kg(edge_dfs: List[DataFrame],
              node_dfs: List[DataFrame],
-             mapping_dfs: List[DataFrame] = None,
-             merge_delimiter: str = "|") -> tuple[MergedKG, MergeQC]:
+             mapping_dfs: List[DataFrame] = None) -> tuple[MergedKG, MergeQC]:
     """
     Merge a list of node and edge dataframes.
 
@@ -86,7 +85,6 @@ def merge_kg(edge_dfs: List[DataFrame],
         edge_dfs (List[pandas.DataFrame]): List of edge dataframes.
         node_dfs (List[pandas.DataFrame]): List of node dataframes.
         mapping_dfs (List[pandas.DataFrame]): List of mapping dataframes.
-        merge_delimiter (str): Delimiter to use when merging nodes.
 
     Returns:
         Tuple[MergedKG, pandas.DataFrame]: A tuple containing the merged KG and merge QC.
@@ -104,7 +102,7 @@ def merge_kg(edge_dfs: List[DataFrame],
     duplicate_edges = get_duplicates_by_id(df=all_edges)
     dangling_edges = get_dangling_edges(edges=all_edges, nodes=all_nodes)
 
-    nodes = clean_nodes(nodes=all_nodes, merge_delimiter=merge_delimiter)
+    nodes = clean_nodes(nodes=all_nodes)
     edges = clean_edges(edges=all_edges, nodes=nodes)
 
     return MergedKG(nodes=nodes, edges=edges), \

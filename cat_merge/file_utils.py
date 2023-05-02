@@ -3,16 +3,23 @@ import os
 import tarfile
 from pathlib import Path
 import pandas as pd
-# from grape import Graph  # type: ignore
-from typing import IO, List, Optional, Tuple, Union
+from typing import IO, List, Optional, Union
 
-
-from pandas import DataFrame
-
-from cat_merge.model.merged_kg import MergedKG
+from cat_merge.model.merged_kg import MergedKG, MergeQC
 
 
 def get_files(filepath: str, nodes_match: str = "_nodes", edges_match: str = "_edges"):
+    """
+    Get node and edge files in a directory based on a string match.
+
+    Args:
+        filepath (str): Path to directory.
+        nodes_match (str): String to match for node files.
+        edges_match (str): String to match for edge files.
+
+    Returns:
+        Tuple[List[str], List[str]]: List of node files and list of edge files.
+    """
     node_files = []
     edge_files = []
     for file in os.listdir(filepath):
@@ -24,6 +31,16 @@ def get_files(filepath: str, nodes_match: str = "_nodes", edges_match: str = "_e
 
 
 def read_dfs(files: List[str], add_source_col: Optional[str] = "provided_by") -> List[pd.DataFrame]:
+    """
+    Read a list of files into dataframes.
+
+    Args:
+        files (List[str]): List of files.
+        add_source_col (str, optional): Name of column to add to each dataframe with the name of the file.
+
+    Returns:
+        List[pandas.DataFrame]: List of dataframes.
+    """
     dataframes = []
     for file in files:
         dataframes.append(read_df(file, add_source_col, Path(file).stem))
@@ -31,6 +48,17 @@ def read_dfs(files: List[str], add_source_col: Optional[str] = "provided_by") ->
 
 
 def read_tar_dfs(tar: tarfile.TarFile, type_name, add_source_col: str = "provided_by") -> List[pd.DataFrame]:
+    """
+    Read a tar archive into dataframes.
+
+    Args:
+        tar (tarfile.TarFile): Tarfile object.
+        type_name (str): String to match for node or edge files.
+        add_source_col (str, optional): Name of column to add to each dataframe with the name of the file.
+
+    Returns:
+        List[pandas.DataFrame]: List of dataframes.
+    """
     dataframes = []
     for member in tar.getmembers():
         if member.isfile() and type_name in member.name:
@@ -41,27 +69,49 @@ def read_tar_dfs(tar: tarfile.TarFile, type_name, add_source_col: str = "provide
 def read_df(fh: Union[str, IO[bytes]],
             add_source_col: Optional[str] = "provided_by",
             source_col_value: Optional[str] = None) -> pd.DataFrame:
+    """
+    Read a file into a dataframe.
+
+    Args:
+        fh (str, io.TextIOWrapper): File handle.
+        add_source_col (str, optional): Name of column to add to the dataframe with the name of the file.
+        source_col_value (Any, optional): Value to add to the source column.
+
+    Returns:
+        pandas.DataFrame: Dataframe.
+    """
     df = pd.read_csv(fh, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#')
     if add_source_col is not None:
         df[add_source_col] = source_col_value
     return df
 
 
-# def read_tar(archive_path: str,
-#              nodes_match: str = "_nodes",
-#              edges_match: str = "_edges",
-#              add_source_col: str = "provided_by"):
-#     tar = tarfile.open(archive_path, "r:*")
-#     node_dfs = read_tar_dfs(tar, nodes_match, add_source_col)
-#     edge_dfs = read_tar_dfs(tar, edges_match, add_source_col)
-#     return node_dfs, edge_dfs
-
-
 def write_df(df: pd.DataFrame, filename: str):
+    """
+    Write a dataframe to a file.
+
+    Args:
+        df (pandas.DataFrame): Dataframe.
+        filename (str): Name of file.
+
+    Returns:
+        None
+    """
     df.to_csv(filename, sep="\t", index=False)
 
 
 def write_tar(tar_path: str, files: List[str], delete_files=True):
+    """
+    Write a list of files to a tar archive.
+
+    Args:
+        tar_path (str): Path to tar archive.
+        files (List[str]): List of files.
+        delete_files (bool, optional): Delete files after writing to tar archive.
+
+    Returns:
+        None
+    """
     tar = tarfile.open(tar_path, "w:gz")
     for file in files:
         tar.add(file, arcname=os.path.basename(file))
@@ -74,16 +124,27 @@ def write_tar(tar_path: str, files: List[str], delete_files=True):
 def read_kg(source: str = None,
             node_match: str = "_node",
             edge_match: str = "_edge",
-            duplicate_node_match: str = "duplicate-node",
-            dangling_edge_match: str = "dangling-edge",
             node_file: str = None,
             edge_file: str = None,
             duplicate_node_file: str = None,
             dangling_edge_file: str = None,
             add_source_col: str = None) -> MergedKG:
-    duplicate_nodes = []
-    dangling_edges = []
+    """
+    Read a knowledge graph from a directory or tar archive.
 
+    Args:
+        source (str): Path to directory or tar archive.
+        node_match (str): String to match for node files.
+        edge_match (str): String to match for edge files.
+        node_file (str, optional): Path to node file.
+        edge_file (str, optional): Path to edge file.
+        duplicate_node_file (str, optional): Path to duplicate node file.
+        dangling_edge_file (str, optional): Path to dangling edge file.
+        add_source_col (str, optional): Name of column to add to each dataframe with the name of the file.
+
+    Returns:
+        MergedKG: MergedKG object.
+    """
     if source is not None:
         if node_file is not None or edge_file is not None \
                 or duplicate_node_file is not None or dangling_edge_file is not None:
@@ -92,50 +153,82 @@ def read_kg(source: str = None,
             [node_file], [edge_file] = get_files(source)
             nodes = read_df(node_file, add_source_col, node_file)
             edges = read_df(edge_file, add_source_col, edge_file)
-            duplicate_files = get_files(source, duplicate_node_match, dangling_edge_match)
-            if len(duplicate_files[0]) == 1:
-                [duplicate_node_file] = duplicate_files[0]
-                duplicate_nodes = read_df(duplicate_node_file, add_source_col, node_file)
-            if len(duplicate_files[0]) == 1:
-                [dangling_edge_file] = duplicate_files[1]
-                dangling_edges = read_df(dangling_edge_file, add_source_col, node_file)
         elif tarfile.is_tarfile(source):
             tar = tarfile.open(source, "r:*")
             [nodes] = read_tar_dfs(tar, node_match, add_source_col)
             [edges] = read_tar_dfs(tar, edge_match, add_source_col)
-            tar_duplicate_nodes = read_tar_dfs(tar, duplicate_node_match, add_source_col)
-            if len(tar_duplicate_nodes) == 1:
-                [duplicate_nodes] = tar_duplicate_nodes
-            tar_dangling_edges = read_tar_dfs(tar, dangling_edge_match, add_source_col)
-            if len(tar_dangling_edges) == 1:
-                [dangling_edges] = tar_dangling_edges
         else:
             raise ValueError("source is not an archive or directory")
     elif node_file is not None and edge_file is not None:
         nodes = read_df(node_file, add_source_col, node_file)
         edges = read_df(edge_file, add_source_col, node_file)
-        if duplicate_node_file is not None:
-            duplicate_nodes = read_df(duplicate_node_file, add_source_col, node_file)
-        if dangling_edge_file is not None:
-            dangling_edges = read_df(dangling_edge_file, add_source_col, node_file)
     else:
         raise ValueError("Must specify either nodes & edges or source")
 
-    kg = MergedKG(nodes, edges, duplicate_nodes, dangling_edges)
+    kg = MergedKG(nodes, edges)
     return kg
 
 
+def read_qc(source: str = None) -> MergeQC:
+    """
+    Read a MergeQC object from a directory or tar archive.
+
+    Args:
+        source (str): Path to directory or tar archive.
+
+    Returns:
+        MergeQC: MergeQC object.
+    """
+    duplicate_nodes = pd.DataFrame([])
+    dangling_edges = pd.DataFrame([])
+    duplicate_edges = pd.DataFrame([])
+    if source is not None:
+        if os.path.isdir(source):
+            qc_files = os.listdir(source)
+            for qc_file in qc_files:
+                if "duplicate-nodes" in qc_file:
+                    duplicate_nodes = read_df(qc_file)
+                elif "dangling-edges" in qc_file:
+                    dangling_edges = read_df(qc_file)
+                elif "duplicate-edges" in qc_file:
+                    duplicate_edges = read_df(qc_file)
+        elif tarfile.is_tarfile(source):
+            tar = tarfile.open(source, "r:*")
+            tar_duplicate_nodes = read_tar_dfs(tar, "duplicate-nodes")
+            if len(tar_duplicate_nodes) == 1:
+                [duplicate_nodes] = tar_duplicate_nodes
+            tar_dangling_edges = read_tar_dfs(tar, "dangling-edges")
+            if len(tar_dangling_edges) == 1:
+                [dangling_edges] = tar_dangling_edges
+            tar_duplicate_edges = read_tar_dfs(tar, "duplicate-edges")
+            if len(tar_duplicate_edges) == 1:
+                [duplicate_edges] = tar_duplicate_edges
+        else:
+            raise ValueError("source is not an archive or directory")
+    else:
+        raise ValueError("Must specify source")
+
+    return MergeQC(duplicate_nodes=duplicate_nodes, dangling_edges=dangling_edges, duplicate_edges=duplicate_edges)
+
+
 def write(kg: MergedKG, name: str, output_dir: str):
+    """
+    Write a knowledge graph to a directory.
+
+    Args:
+        kg (MergedKG): MergedKG object.
+        name (str): Name of knowledge graph.
+        output_dir (str): Path to directory.
+
+    Returns:
+        None
+    """
     Path(f"{output_dir}/qc").mkdir(exist_ok=True, parents=True)
 
-    duplicate_nodes_path = f"{output_dir}/qc/{name}-duplicate-nodes.tsv.gz"
-    dangling_edges_path = f"{output_dir}/qc/{name}-dangling-edges.tsv.gz"
     nodes_path = f"{output_dir}/{name}_nodes.tsv"
     edges_path = f"{output_dir}/{name}_edges.tsv"
     tar_path = f"{output_dir}/{name}.tar.gz"
 
-    write_df(df=kg.duplicate_nodes, filename=duplicate_nodes_path)
-    write_df(df=kg.dangling_edges, filename=dangling_edges_path)
     write_df(df=kg.nodes, filename=nodes_path)
     write_df(df=kg.edges, filename=edges_path)
 

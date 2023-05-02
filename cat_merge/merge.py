@@ -19,10 +19,23 @@ def merge(
         edges: List[str] = None,  # Optional list of edge files
         mappings: List[str] = None,  # Optional list of SSSOM mapping files
         output_dir: str = "merged-output",  # Directory to output knowledge graph
-        merge_delimiter: str = "|",  # Delimiter to use when merging categories and properties on duplicates
         qc_report: bool = True
 ):
+    """
+    Merges nodes and edges into a knowledge graph.
 
+    Args:
+        name (str): Output name of KG after merge.
+        source (str, optional): Optional directory or tar archive containing node and edge files.
+        nodes (List[str], optional): Optional list of node files.
+        edges (List[str], optional): Optional list of edge files.
+        mappings (List[str], optional): Optional list of SSSOM mapping files.
+        output_dir (str): Directory to output knowledge graph.
+        qc_report (bool, optional): Boolean for whether to generate a qc report (defaults to True).
+
+    Returns:
+        None
+    """
     print(f"""\
 Merging KG files...
   name: {name} 
@@ -32,8 +45,11 @@ Merging KG files...
   mappings: {mappings}
   output_dir: {output_dir}
 """)
-    if source is not None and nodes is not None:
-        raise ValueError("Wrong attributes: source and node/edge files cannot both be specified")
+    if nodes is None != (edges is None) or source is None == (nodes is None):
+        raise ValueError("Wrong attributes: must specify both nodes & edges or source")
+
+    if source is not None and (nodes or edges):
+        raise ValueError("Wrong attributes: source and node or edge files cannot both be specified")
 
     print("Reading node and edge files")
     if type(nodes) is list and len(nodes) > 0 \
@@ -49,7 +65,6 @@ Merging KG files...
             tar = tarfile.open(source, "r:*")
             node_dfs = read_tar_dfs(tar, "_nodes")
             edge_dfs = read_tar_dfs(tar, "_edges")
-            # node_dfs, edge_dfs = read_tar(source)
         else:
             raise ValueError("Specified source is not a directory or tar archive")
     else:
@@ -60,7 +75,7 @@ Merging KG files...
         mapping_dfs = read_dfs(mappings, add_source_col=None)
 
     print("Merging...")
-    kg, qc = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping_dfs=mapping_dfs, merge_delimiter=merge_delimiter)
+    kg, qc = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping_dfs=mapping_dfs)
     write(
         name=name,
         kg=kg,
@@ -73,5 +88,3 @@ Merging KG files...
 
         with open(f"{output_dir}/qc_report.yaml", "w") as report_file:
             yaml.dump(qc_report, report_file)
-
-

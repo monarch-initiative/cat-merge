@@ -72,7 +72,7 @@ Merging KG files...
 
     mapping_dfs = []
     if mappings is not None:
-        mapping_dfs = read_dfs(mappings, add_source_col=None)
+        mapping_dfs = read_dfs(mappings, add_source_col=None, comment_character="#")
 
     print("Merging...")
     kg, qc = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping_dfs=mapping_dfs)

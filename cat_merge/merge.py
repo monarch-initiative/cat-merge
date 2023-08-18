@@ -45,7 +45,7 @@ Merging KG files...
   mappings: {mappings}
   output_dir: {output_dir}
 """)
-    if nodes is None != (edges is None) or source is None == (nodes is None):
+    if source is None and (nodes is None or edges is None):
         raise ValueError("Wrong attributes: must specify both nodes & edges or source")
 
     if source is not None and (nodes or edges):

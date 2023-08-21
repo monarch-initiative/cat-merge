@@ -30,7 +30,9 @@ def get_files(filepath: str, nodes_match: str = "_nodes", edges_match: str = "_e
     return node_files, edge_files
 
 
-def read_dfs(files: List[str], add_source_col: Optional[str] = "provided_by") -> List[pd.DataFrame]:
+def read_dfs(files: List[str],
+             add_source_col: Optional[str] = "provided_by",
+             comment_character: str = None) -> List[pd.DataFrame]:
     """
     Read a list of files into dataframes.
 
@@ -43,7 +45,7 @@ def read_dfs(files: List[str], add_source_col: Optional[str] = "provided_by") ->
     """
     dataframes = []
     for file in files:
-        dataframes.append(read_df(file, add_source_col, Path(file).stem))
+        dataframes.append(read_df(file, add_source_col, Path(file).stem, comment_character=comment_character))
     return dataframes
 
 
@@ -68,7 +70,8 @@ def read_tar_dfs(tar: tarfile.TarFile, type_name, add_source_col: str = "provide
 
 def read_df(fh: Union[str, IO[bytes]],
             add_source_col: Optional[str] = "provided_by",
-            source_col_value: Optional[str] = None) -> pd.DataFrame:
+            source_col_value: Optional[str] = None,
+            comment_character: str = None) -> pd.DataFrame:
     """
     Read a file into a dataframe.
 
@@ -76,11 +79,12 @@ def read_df(fh: Union[str, IO[bytes]],
         fh (str, io.TextIOWrapper): File handle.
         add_source_col (str, optional): Name of column to add to the dataframe with the name of the file.
         source_col_value (Any, optional): Value to add to the source column.
+        comment_character (str, optional): Character to ignore lines starting with, or anything after.
 
     Returns:
         pandas.DataFrame: Dataframe.
     """
-    df = pd.read_csv(fh, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment='#')
+    df = pd.read_csv(fh, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment=comment_character)
     if add_source_col is not None:
         df[add_source_col] = source_col_value
     return df

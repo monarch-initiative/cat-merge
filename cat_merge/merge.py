@@ -82,6 +82,8 @@ Merging KG files...
         output_dir=output_dir
     )
 
+    write_qc(name=name, qc=qc, output_dir=output_dir)
+
     if qc_report:
         print("Generating QC report")
         qc_report = create_qc_report(kg, qc)

@@ -5,7 +5,7 @@ from typing import List
 import yaml
 import logging
 
-from cat_merge.file_utils import read_dfs, read_tar_dfs, get_files, write
+from cat_merge.file_utils import read_dfs, read_tar_dfs, get_files, write, write_qc
 from cat_merge.merge_utils import merge_kg
 from cat_merge.qc_utils import create_qc_report
 
@@ -81,6 +81,8 @@ Merging KG files...
         kg=kg,
         output_dir=output_dir
     )
+
+    write_qc(name=name, qc=qc, output_dir=output_dir)
 
     if qc_report:
         print("Generating QC report")

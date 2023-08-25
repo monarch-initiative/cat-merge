@@ -237,3 +237,10 @@ def write(kg: MergedKG, name: str, output_dir: str):
     write_df(df=kg.edges, filename=edges_path)
 
     write_tar(tar_path, [nodes_path, edges_path])
+
+def write_qc(qc: MergeQC, name: str, output_dir: str):
+    duplicate_nodes_path = f"{output_dir}/qc/{name}-duplicate-nodes.tsv.gz"
+    dangling_edges_path = f"{output_dir}/qc/{name}-dangling-edges.tsv.gz"
+
+    write_df(df=qc.duplicate_nodes, filename=duplicate_nodes_path)
+    write_df(df=qc.dangling_edges, filename=dangling_edges_path)

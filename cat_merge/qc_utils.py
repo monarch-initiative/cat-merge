@@ -369,7 +369,7 @@ def get_difference(a: Union[List, pd.Series], b: Union[List, pd.Series]) -> Unio
     return s if type(a) is list else pd.Series(s, dtype=a.dtype, name=a.name)
 
 
-def create_qc_report(kg: MergedKG, qc: MergeQC, data_type: type = dict, group_by: str = "provided_by") -> Dict:
+def create_qc_report(kg: MergedKG, qc: MergeQC, data_type: type = list, group_by: str = "provided_by") -> Dict:
     """
     interface for generating qc report from merged kg
 

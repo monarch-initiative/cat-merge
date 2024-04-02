@@ -11,10 +11,10 @@ def nodes_and_edges() -> Tuple[List[DataFrame], List[DataFrame]]:
     edges = []
 
     gene_nodes = u"""\
-    id      category xref
-    Gene:1  Gene     NCBI:10
-    Gene:2  Gene     ZFIN:123 
-    Gene:3  Gene     HGNC:11  
+    id      category xref   symbol
+    Gene:1  Gene     NCBI:10    nan
+    Gene:2  Gene     ZFIN:123
+    Gene:3  Gene     HGNC:11
     Gene:4  Gene 
     Gene:4  Gene 
     """
@@ -86,3 +86,8 @@ def test_merge_kg_dangling_edge_count(nodes_and_edges):
 def test_merge_kg_duplicate_node_count(nodes_and_edges):
     kg, qc = merge_kg(node_dfs=nodes_and_edges[0], edge_dfs=nodes_and_edges[1])
     assert(len(qc.duplicate_nodes) == 2)
+
+def test_merged_node_name(nodes_and_edges):
+    kg, qc = merge_kg(node_dfs=nodes_and_edges[0], edge_dfs=nodes_and_edges[1])
+    gene_1_name = kg.nodes[kg.nodes.id == 'Gene:1'].name.values[0]
+    assert(gene_1_name == 'nan', "Gene:1 should have name 'nan' and not be replaced by an empty string")

@@ -10,9 +10,9 @@ from pandas.core.frame import DataFrame
 # Borrowed from https://stackoverflow.com/questions/58771331/cleanly-hard-code-a-pandas-dataframe-into-a-python-script
 def string_df(data: str, index_column_is_id=True):
     if index_column_is_id:
-        df = pd.read_csv(StringIO(data), sep=r"\s+", engine='python')
+        df = pd.read_csv(StringIO(data), sep=r"\s+", engine='python', keep_default_na=False, na_values=[''])
     else:
-        df = pd.read_csv(StringIO(data), sep=r"\s+", engine='python')
+        df = pd.read_csv(StringIO(data), sep=r"\s+", engine='python', keep_default_na=False, na_values=[''])
     return df
 
 

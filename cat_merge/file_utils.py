@@ -84,7 +84,14 @@ def read_df(fh: Union[str, IO[bytes]],
     Returns:
         pandas.DataFrame: Dataframe.
     """
-    df = pd.read_csv(fh, sep="\t", dtype="string", lineterminator="\n", quoting=csv.QUOTE_NONE, comment=comment_character)
+    df = pd.read_csv(fh,
+                     sep="\t",
+                     dtype="string",
+                     lineterminator="\n",
+                     quoting=csv.QUOTE_NONE,
+                     comment=comment_character,
+                     keep_default_na=False,
+                     na_values=[''])
     if add_source_col is not None:
         df[add_source_col] = source_col_value
     return df

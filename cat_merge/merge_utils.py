@@ -41,7 +41,7 @@ def clean_nodes(nodes: DataFrame) -> DataFrame:
     Returns:
         pandas.DataFrame: Dataframe of nodes with duplicates dropped
     """
-    nodes.drop_duplicates(inplace=True)
+    nodes.drop_duplicates(inplace=True, subset=['id'], keep='first')
     return nodes
 
 

@@ -17,8 +17,10 @@ def create_edge_report(edges_grouped_by, edges_grouped_by_values, unique_id_from
     Returns:
         A Dict with the edge report
     """
+    # Fix groupby tuple issue - extract string from tuple if needed
+    name = edges_grouped_by[0] if isinstance(edges_grouped_by, tuple) else edges_grouped_by
     edge_object = {
-        "name": edges_grouped_by,
+        "name": name,
         "namespaces": col_to_yaml(get_namespace(
             pd.concat([edges_grouped_by_values['subject'], edges_grouped_by_values['object']])
         ).drop_duplicates()),
@@ -71,8 +73,10 @@ def create_predicate_report(
     predicates = ReportContainer(data_type, key_name='uri')
     predicate_group = edges_grouped_by_values.groupby([group_by])[['id', 'object', 'subject', 'category']]
     for predicate, predicate_values in predicate_group:
+        # Fix groupby tuple issue - extract string from tuple if needed
+        uri = predicate[0] if isinstance(predicate, tuple) else predicate
         predicate_object = {
-            "uri": predicate,
+            "uri": uri,
             "total_number": predicate_values['id'].size,
             "missing_subjects": len(set(predicate_values['subject']) - set(node_ids)),
             "missing_objects": len(set(predicate_values['object']) - set(node_ids)),
@@ -119,8 +123,10 @@ def create_edge_node_types_report(
     for node_type_provided_by, node_type_provided_by_values in node_type_group:
         missing_subjects = get_difference(node_type_provided_by_values['id'], edges_grouped_by_values['subject'])
         missing_objects = get_difference(node_type_provided_by_values['id'], edges_grouped_by_values['object'])
+        # Fix groupby tuple issue - extract string from tuple if needed
+        name = node_type_provided_by[0] if isinstance(node_type_provided_by, tuple) else node_type_provided_by
         node_type_object = {
-            "name": node_type_provided_by,
+            "name": name,
             "categories": col_to_yaml(node_type_provided_by_values['category']),
             "namespaces": col_to_yaml(get_namespace(node_type_provided_by_values['id'])),
             "total_number": node_type_provided_by_values['id'].size,
@@ -300,8 +306,10 @@ def create_nodes_report(
     node_grouping_fields = get_intersection(list(nodes.columns), ['id', 'category', 'in_taxon'])
     nodes_group = nodes.groupby([group_by])[node_grouping_fields]
     for nodes_grouped_by, nodes_grouped_by_values in nodes_group:
+        # Fix groupby tuple issue - extract string from tuple if needed
+        name = nodes_grouped_by[0] if isinstance(nodes_grouped_by, tuple) else nodes_grouped_by
         node_object = {
-            "name": nodes_grouped_by,
+            "name": name,
             "namespaces": col_to_yaml(get_namespace(nodes_grouped_by_values['id'])),
             "categories": col_to_yaml(nodes_grouped_by_values['category']),
             "total_number": nodes_grouped_by_values['id'].size,

@@ -25,7 +25,9 @@ def test_create_edge_report(kg_report_edges_1, kg_report_nodes_1, edge_report_ex
         edge_report = create_edge_report(edges_grouped_by, edges_grouped_by_values, kg_report_nodes_1["id"])
         assert type(edge_report) is dict
         assert len(edge_report) == 8
-        edge_report_keys.append(edges_grouped_by)
+        # Fix groupby tuple issue - extract string from tuple if needed
+        key = edges_grouped_by[0] if isinstance(edges_grouped_by, tuple) else edges_grouped_by
+        edge_report_keys.append(key)
         edge_report_values.append(edge_report)
 
     check_report_data(edge_report_keys, edge_report_expected.keys())

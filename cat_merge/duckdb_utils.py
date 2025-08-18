@@ -47,6 +47,7 @@ def read_kg_files(
                               delim='\t',
                               quote='',
                               all_varchar=true,
+                              union_by_name=true,
                               ignore_errors=true)
         """)
         
@@ -60,6 +61,7 @@ def read_kg_files(
                               delim='\t',
                               quote='',
                               all_varchar=true,
+                              union_by_name=true,
                               ignore_errors=true)
         """)
         
@@ -77,32 +79,26 @@ def read_kg_files(
 def _load_file_list(conn: duckdb.DuckDBPyConnection, table_name: str, files: List[str], match_pattern: str):
     """Load a list of files into a single table with provided_by column."""
     
-    # Create table from first file
-    first_file = files[0]
-    provided_by = Path(first_file).stem.replace(match_pattern, "")
-    
-    conn.execute(f"""
-        CREATE TABLE {table_name} AS
-        SELECT *, '{provided_by}' as provided_by
-        FROM read_csv_auto('{first_file}',
-                          delim='\t',
-                          quote='',
-                          all_varchar=true,
-                          ignore_errors=true)
-    """)
-    
-    # Union remaining files
-    for file_path in files[1:]:
+    # Build UNION ALL query for all files with their provided_by values
+    union_parts = []
+    for file_path in files:
         provided_by = Path(file_path).stem.replace(match_pattern, "")
-        conn.execute(f"""
-            INSERT INTO {table_name}
+        union_parts.append(f"""
             SELECT *, '{provided_by}' as provided_by
             FROM read_csv_auto('{file_path}',
-                              delim='\t', 
+                              delim='\t',
                               quote='',
                               all_varchar=true,
+                              union_by_name=true,
                               ignore_errors=true)
         """)
+    
+    # Create table with UNION ALL of all files
+    union_query = " UNION ALL ".join(union_parts)
+    conn.execute(f"""
+        CREATE TABLE {table_name} AS
+        {union_query}
+    """)
 
 
 def read_mapping_files(conn: duckdb.DuckDBPyConnection, mappings: List[str]) -> None:
@@ -116,31 +112,26 @@ def read_mapping_files(conn: duckdb.DuckDBPyConnection, mappings: List[str]) -> 
     if not mappings:
         return
         
-    # Create mappings table
-    first_file = mappings[0]
-    conn.execute(f"""
-        CREATE TABLE mappings AS
-        SELECT *
-        FROM read_csv_auto('{first_file}',
-                          delim='\t',
-                          quote='',
-                          all_varchar=true,
-                          comment='#',
-                          ignore_errors=true)
-    """)
-    
-    # Union remaining mapping files
-    for file_path in mappings[1:]:
-        conn.execute(f"""
-            INSERT INTO mappings
+    # Build UNION ALL query for all mapping files
+    union_parts = []
+    for file_path in mappings:
+        union_parts.append(f"""
             SELECT *
             FROM read_csv_auto('{file_path}',
                               delim='\t',
                               quote='',
-                              all_varchar=true, 
+                              all_varchar=true,
+                              union_by_name=true,
                               comment='#',
                               ignore_errors=true)
         """)
+    
+    # Create table with UNION ALL of all mapping files
+    union_query = " UNION ALL ".join(union_parts)
+    conn.execute(f"""
+        CREATE TABLE mappings AS
+        {union_query}
+    """)
 
 
 def apply_mappings(conn: duckdb.DuckDBPyConnection) -> None:

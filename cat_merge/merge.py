@@ -1,5 +1,6 @@
 import os
 import tarfile
+import time
 from typing import List
 
 import yaml
@@ -36,6 +37,9 @@ def merge(
     Returns:
         None
     """
+    start_time = time.time()
+    timing = {}
+    
     print(f"""\
 Merging KG files...
   name: {name} 
@@ -51,6 +55,7 @@ Merging KG files...
     if source is not None and (nodes or edges):
         raise ValueError("Wrong attributes: source and node or edge files cannot both be specified")
 
+    step_start = time.time()
     print("Reading node and edge files")
     if type(nodes) is list and len(nodes) > 0 \
             and type(edges) is list and len(edges) > 0:
@@ -73,9 +78,12 @@ Merging KG files...
     mapping_dfs = []
     if mappings is not None:
         mapping_dfs = read_dfs(mappings, add_source_col=None, comment_character="#")
+    timing['read_files'] = time.time() - step_start
 
+    step_start = time.time()
     print("Merging...")
     kg, qc = merge_kg(node_dfs=node_dfs, edge_dfs=edge_dfs, mapping_dfs=mapping_dfs)
+    
     write(
         name=name,
         kg=kg,
@@ -83,10 +91,26 @@ Merging KG files...
     )
 
     write_qc(name=name, qc=qc, output_dir=output_dir)
+    timing['merge_and_write'] = time.time() - step_start
 
     if qc_report:
+        step_start = time.time()
         print("Generating QC report")
         qc_report = create_qc_report(kg, qc)
 
         with open(f"{output_dir}/qc_report.yaml", "w") as report_file:
             yaml.dump(qc_report, report_file)
+        timing['qc_report'] = time.time() - step_start
+    else:
+        timing['qc_report'] = 0
+    
+    # Calculate total time
+    total_time = time.time() - start_time
+    timing['total'] = total_time
+    
+    print(f"\n=== TIMING REPORT (Pandas) ===")
+    print(f"File reading:      {timing['read_files']:.2f}s")
+    print(f"Merge & write:     {timing['merge_and_write']:.2f}s")
+    print(f"QC report:         {timing['qc_report']:.2f}s")
+    print(f"==============================")
+    print(f"TOTAL TIME:        {total_time:.2f}s")

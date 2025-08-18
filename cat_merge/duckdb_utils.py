@@ -103,28 +103,46 @@ def _load_file_list(conn: duckdb.DuckDBPyConnection, table_name: str, files: Lis
 
 def read_mapping_files(conn: duckdb.DuckDBPyConnection, mappings: List[str]) -> None:
     """
-    Read SSSOM mapping files into DuckDB.
+    Read SSSOM mapping files into DuckDB with filename tracking.
     
     Args:
         conn: DuckDB connection
-        mappings: List of mapping file paths
+        mappings: List of mapping file paths or glob patterns
     """
     if not mappings:
         return
         
-    # Build UNION ALL query for all mapping files
+    # Build UNION ALL query for all mapping files with filename tracking
     union_parts = []
-    for file_path in mappings:
-        union_parts.append(f"""
-            SELECT *
-            FROM read_csv_auto('{file_path}',
-                              delim='\t',
-                              quote='',
-                              all_varchar=true,
-                              union_by_name=true,
-                              comment='#',
-                              ignore_errors=true)
-        """)
+    for file_pattern in mappings:
+        # Check if it's a glob pattern or individual file
+        if '*' in file_pattern or '?' in file_pattern:
+            # Use glob pattern with filename tracking
+            union_parts.append(f"""
+                SELECT *, 
+                       regexp_extract(filename, '/([^/]+)\.sssom\.tsv$', 1) as mapping_source
+                FROM read_csv_auto('{file_pattern}',
+                                  filename=true,
+                                  delim='\t',
+                                  quote='',
+                                  all_varchar=true,
+                                  union_by_name=true,
+                                  comment='#',
+                                  ignore_errors=true)
+            """)
+        else:
+            # Individual file with source name from filename
+            file_stem = Path(file_pattern).stem
+            union_parts.append(f"""
+                SELECT *, '{file_stem}' as mapping_source
+                FROM read_csv_auto('{file_pattern}',
+                                  delim='\t',
+                                  quote='',
+                                  all_varchar=true,
+                                  union_by_name=true,
+                                  comment='#',
+                                  ignore_errors=true)
+            """)
     
     # Create table with UNION ALL of all mapping files
     union_query = " UNION ALL ".join(union_parts)

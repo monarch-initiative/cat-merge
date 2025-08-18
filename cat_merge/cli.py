@@ -6,7 +6,7 @@ from cat_merge.duckdb_merge import merge_duckdb
 @click.command()
 @click.option('--name', help='Name of KG to merge')
 @click.option('--source', help='Optional directory containing node and edge files')
-@click.option('--mapping', multiple=True, required=False, help='Optional SSSOM mapping file(s)')
+@click.option('--mapping', multiple=True, required=False, help='Optional SSSOM mapping file(s) or glob patterns (e.g., mappings/*.sssom.tsv)')
 @click.option('--output_dir', help='Directory to output knowledge graph')
 @click.option('--qc_report', required=False, default=True,
               help='Boolean for whether to generate a qc report (defaults to True')

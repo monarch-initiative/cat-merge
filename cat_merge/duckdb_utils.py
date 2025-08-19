@@ -37,12 +37,10 @@ def read_kg_files(
         nodes_pattern = f"{source}/*{nodes_match}.tsv"
         edges_pattern = f"{source}/*{edges_match}.tsv"
         
-        # Create nodes table with provided_by from filename (if not already present)
+        # Create nodes table with provided_by from filename, excluding any input provided_by
         conn.execute(f"""
-            CREATE TABLE nodes AS
-            SELECT 
-                * EXCLUDE (filename, provided_by),
-                COALESCE(provided_by, regexp_extract(filename, '/([^/]+){nodes_match}\.tsv$', 1)) as provided_by
+            CREATE TEMP TABLE temp_nodes AS
+            SELECT *
             FROM read_csv_auto('{nodes_pattern}', 
                               filename=true,
                               delim='\t',
@@ -52,12 +50,22 @@ def read_kg_files(
                               ignore_errors=true)
         """)
         
-        # Create edges table with provided_by from filename (if not already present)
+        # Check if provided_by column exists and create appropriate SELECT
+        has_provided_by = conn.execute("SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'temp_nodes' AND column_name = 'provided_by'").fetchone()[0] > 0
+        exclude_clause = "filename, provided_by" if has_provided_by else "filename"
+        
         conn.execute(f"""
-            CREATE TABLE edges AS
+            CREATE TABLE nodes AS
             SELECT 
-                * EXCLUDE (filename, provided_by),
-                COALESCE(provided_by, regexp_extract(filename, '/([^/]+){edges_match}\.tsv$', 1)) as provided_by
+                * EXCLUDE ({exclude_clause}),
+                regexp_extract(filename, '/([^/]+){nodes_match}\.tsv$', 1) as provided_by
+            FROM temp_nodes
+        """)        
+        
+        # Create edges table with provided_by from filename, excluding any input provided_by
+        conn.execute(f"""
+            CREATE TEMP TABLE temp_edges AS
+            SELECT *
             FROM read_csv_auto('{edges_pattern}',
                               filename=true, 
                               delim='\t',
@@ -65,6 +73,18 @@ def read_kg_files(
                               all_varchar=true,
                               union_by_name=true,
                               ignore_errors=true)
+        """)
+        
+        # Check if provided_by column exists and create appropriate SELECT
+        has_provided_by = conn.execute("SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'temp_edges' AND column_name = 'provided_by'").fetchone()[0] > 0
+        exclude_clause = "filename, provided_by" if has_provided_by else "filename"
+        
+        conn.execute(f"""
+            CREATE TABLE edges AS
+            SELECT 
+                * EXCLUDE ({exclude_clause}),
+                regexp_extract(filename, '/([^/]+){edges_match}\.tsv$', 1) as provided_by
+            FROM temp_edges
         """)
         
     elif nodes and edges:
@@ -85,8 +105,12 @@ def _load_file_list(conn: duckdb.DuckDBPyConnection, table_name: str, files: Lis
     union_parts = []
     for file_path in files:
         provided_by = Path(file_path).stem.replace(match_pattern, "")
-        union_parts.append(f"""
-            SELECT *, '{provided_by}' as provided_by
+        
+        # Create temp table to check for provided_by column
+        temp_table = f"temp_{table_name}_{len(union_parts)}"
+        conn.execute(f"""
+            CREATE TEMP TABLE {temp_table} AS
+            SELECT *
             FROM read_csv_auto('{file_path}',
                               delim='\t',
                               quote='',
@@ -94,6 +118,21 @@ def _load_file_list(conn: duckdb.DuckDBPyConnection, table_name: str, files: Lis
                               union_by_name=true,
                               ignore_errors=true)
         """)
+        
+        # Check if provided_by column exists
+        has_provided_by = conn.execute(f"SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '{temp_table}' AND column_name = 'provided_by'").fetchone()[0] > 0
+        exclude_clause = "provided_by" if has_provided_by else ""
+        
+        if exclude_clause:
+            union_parts.append(f"""
+                SELECT * EXCLUDE ({exclude_clause}), '{provided_by}' as provided_by
+                FROM {temp_table}
+            """)
+        else:
+            union_parts.append(f"""
+                SELECT *, '{provided_by}' as provided_by
+                FROM {temp_table}
+            """)
     
     # Create table with UNION ALL of all files
     union_query = " UNION ALL ".join(union_parts)
@@ -116,13 +155,14 @@ def read_mapping_files(conn: duckdb.DuckDBPyConnection, mappings: List[str]) -> 
         
     # Build UNION ALL query for all mapping files with filename tracking
     union_parts = []
-    for file_pattern in mappings:
+    for i, file_pattern in enumerate(mappings):
         # Check if it's a glob pattern or individual file
         if '*' in file_pattern or '?' in file_pattern:
-            # Use glob pattern with filename tracking
-            union_parts.append(f"""
-                SELECT *, 
-                       regexp_extract(filename, '/([^/]+)\.sssom\.tsv$', 1) as mapping_source
+            # Create temp table to check schema
+            temp_table = f"temp_mapping_{i}"
+            conn.execute(f"""
+                CREATE TEMP TABLE {temp_table} AS
+                SELECT *
                 FROM read_csv_auto('{file_pattern}',
                                   filename=true,
                                   delim='\t',
@@ -132,11 +172,22 @@ def read_mapping_files(conn: duckdb.DuckDBPyConnection, mappings: List[str]) -> 
                                   comment='#',
                                   ignore_errors=true)
             """)
+            
+            # Check if provided_by column exists and create appropriate SELECT
+            has_provided_by = conn.execute(f"SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '{temp_table}' AND column_name = 'provided_by'").fetchone()[0] > 0
+            exclude_clause = "filename, provided_by" if has_provided_by else "filename"
+            
+            union_parts.append(f"""
+                SELECT * EXCLUDE ({exclude_clause}), 
+                       regexp_extract(filename, '/([^/]+)\.sssom\.tsv$', 1) as mapping_source
+                FROM {temp_table}
+            """)
         else:
             # Individual file with source name from filename
-            file_stem = Path(file_pattern).stem
-            union_parts.append(f"""
-                SELECT *, '{file_stem}' as mapping_source
+            temp_table = f"temp_mapping_{i}"
+            conn.execute(f"""
+                CREATE TEMP TABLE {temp_table} AS
+                SELECT *
                 FROM read_csv_auto('{file_pattern}',
                                   delim='\t',
                                   quote='',
@@ -145,6 +196,22 @@ def read_mapping_files(conn: duckdb.DuckDBPyConnection, mappings: List[str]) -> 
                                   comment='#',
                                   ignore_errors=true)
             """)
+            
+            # Check if provided_by column exists
+            has_provided_by = conn.execute(f"SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '{temp_table}' AND column_name = 'provided_by'").fetchone()[0] > 0
+            exclude_clause = "provided_by" if has_provided_by else ""
+            
+            file_stem = Path(file_pattern).stem
+            if exclude_clause:
+                union_parts.append(f"""
+                    SELECT * EXCLUDE ({exclude_clause}), '{file_stem}' as mapping_source
+                    FROM {temp_table}
+                """)
+            else:
+                union_parts.append(f"""
+                    SELECT *, '{file_stem}' as mapping_source
+                    FROM {temp_table}
+                """)
     
     # Create table with UNION ALL of all mapping files
     union_query = " UNION ALL ".join(union_parts)

@@ -9,7 +9,8 @@ def read_kg_files(
     nodes: List[str] = None,
     edges: List[str] = None,
     nodes_match: str = "_nodes",
-    edges_match: str = "_edges"
+    edges_match: str = "_edges",
+    database_path: str = None
 ) -> duckdb.DuckDBPyConnection:
     """
     Read knowledge graph files into DuckDB tables.
@@ -20,11 +21,12 @@ def read_kg_files(
         edges: List of edge file paths
         nodes_match: String pattern to match node files
         edges_match: String pattern to match edge files
+        database_path: Optional path to persistent database file (if None, uses in-memory)
         
     Returns:
         DuckDB connection with 'nodes' and 'edges' tables loaded
     """
-    conn = duckdb.connect()
+    conn = duckdb.connect(database_path)
     
     if source is not None:
         if nodes or edges:
@@ -409,3 +411,5 @@ def write_output_files(conn: duckdb.DuckDBPyConnection, name: str, output_dir: s
         COPY dangling_edges TO '{output_dir}/qc/{name}-dangling-edges.tsv'
         WITH (FORMAT CSV, DELIMITER '\t', HEADER);
     """)
+
+

@@ -55,10 +55,15 @@ Merging KG files with DuckDB...
     if source is not None and (nodes or edges):
         raise ValueError("Wrong attributes: source and node or edge files cannot both be specified")
     
-    # Read files into DuckDB
+    # Create database path
+    import os
+    os.makedirs(output_dir, exist_ok=True)
+    database_path = f"{output_dir}/{name}.duckdb"
+    
+    # Read files into DuckDB (persistent database)
     step_start = time.time()
     print("Reading node and edge files into DuckDB...")
-    conn = read_kg_files(source=source, nodes=nodes, edges=edges)
+    conn = read_kg_files(source=source, nodes=nodes, edges=edges, database_path=database_path)
     timing['read_files'] = time.time() - step_start
     
     # Read mappings if provided
@@ -119,6 +124,7 @@ Merging KG files with DuckDB...
     print(f"=====================")
     print(f"TOTAL TIME:        {total_time:.2f}s")
     print(f"\nMerge completed! Output written to {output_dir}")
+    print(f"DuckDB database: {database_path}")
 
 
 if __name__ == "__main__":

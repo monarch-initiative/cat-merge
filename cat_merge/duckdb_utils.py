@@ -58,7 +58,7 @@ def read_kg_files(
             CREATE TABLE nodes AS
             SELECT 
                 * EXCLUDE ({exclude_clause}),
-                regexp_extract(filename, '/([^/]+){nodes_match}\.tsv$', 1) as provided_by
+                regexp_extract(filename, '/([^/]+)\.tsv$', 1) as provided_by
             FROM temp_nodes
         """)        
         
@@ -83,7 +83,7 @@ def read_kg_files(
             CREATE TABLE edges AS
             SELECT 
                 * EXCLUDE ({exclude_clause}),
-                regexp_extract(filename, '/([^/]+){edges_match}\.tsv$', 1) as provided_by
+                regexp_extract(filename, '/([^/]+)\.tsv$', 1) as provided_by
             FROM temp_edges
         """)
         
@@ -104,7 +104,7 @@ def _load_file_list(conn: duckdb.DuckDBPyConnection, table_name: str, files: Lis
     # Build UNION ALL query for all files with their provided_by values
     union_parts = []
     for file_path in files:
-        provided_by = Path(file_path).stem.replace(match_pattern, "")
+        provided_by = Path(file_path).stem
         
         # Create temp table to check for provided_by column
         temp_table = f"temp_{table_name}_{len(union_parts)}"

@@ -37,11 +37,12 @@ def read_kg_files(
         nodes_pattern = f"{source}/*{nodes_match}.tsv"
         edges_pattern = f"{source}/*{edges_match}.tsv"
         
-        # Create nodes table with provided_by from filename
+        # Create nodes table with provided_by from filename (if not already present)
         conn.execute(f"""
             CREATE TABLE nodes AS
-            SELECT *, 
-                   regexp_extract(filename, '/([^/]+){nodes_match}\.tsv$', 1) as provided_by
+            SELECT 
+                * EXCLUDE (filename, provided_by),
+                COALESCE(provided_by, regexp_extract(filename, '/([^/]+){nodes_match}\.tsv$', 1)) as provided_by
             FROM read_csv_auto('{nodes_pattern}', 
                               filename=true,
                               delim='\t',
@@ -51,11 +52,12 @@ def read_kg_files(
                               ignore_errors=true)
         """)
         
-        # Create edges table with provided_by from filename  
+        # Create edges table with provided_by from filename (if not already present)
         conn.execute(f"""
             CREATE TABLE edges AS
-            SELECT *,
-                   regexp_extract(filename, '/([^/]+){edges_match}\.tsv$', 1) as provided_by
+            SELECT 
+                * EXCLUDE (filename, provided_by),
+                COALESCE(provided_by, regexp_extract(filename, '/([^/]+){edges_match}\.tsv$', 1)) as provided_by
             FROM read_csv_auto('{edges_pattern}',
                               filename=true, 
                               delim='\t',
@@ -172,18 +174,17 @@ def apply_mappings(conn: duckdb.DuckDBPyConnection) -> None:
         LEFT JOIN mappings sm_subj ON e.subject = sm_subj.object_id
         LEFT JOIN mappings sm_obj ON e.object = sm_obj.object_id;
         
-        -- Update edges table with mappings applied
+        -- Update edges table with mappings applied, preserving all original columns
         DROP TABLE edges;
         CREATE TABLE edges AS
         SELECT 
-            id, predicate, category, 
+            * EXCLUDE (subject, object, original_subject, original_object, mapped_subject, mapped_object),
             COALESCE(mapped_subject, original_subject) as subject,
             COALESCE(mapped_object, original_object) as object,
             CASE WHEN mapped_subject IS NOT NULL AND mapped_subject != original_subject 
                  THEN original_subject ELSE NULL END as original_subject,
             CASE WHEN mapped_object IS NOT NULL AND mapped_object != original_object
-                 THEN original_object ELSE NULL END as original_object,
-            provided_by
+                 THEN original_object ELSE NULL END as original_object
         FROM edges_with_mappings;
     """)
 

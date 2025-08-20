@@ -57,7 +57,7 @@ def read_kg_files(
         exclude_clause = "filename, provided_by" if has_provided_by else "filename"
         
         conn.execute(f"""
-            CREATE TABLE nodes AS
+            CREATE OR REPLACE TABLE nodes AS
             SELECT 
                 * EXCLUDE ({exclude_clause}),
                 regexp_extract(filename, '/([^/]+)\.tsv$', 1) as provided_by
@@ -82,7 +82,7 @@ def read_kg_files(
         exclude_clause = "filename, provided_by" if has_provided_by else "filename"
         
         conn.execute(f"""
-            CREATE TABLE edges AS
+            CREATE OR REPLACE TABLE edges AS
             SELECT 
                 * EXCLUDE ({exclude_clause}),
                 regexp_extract(filename, '/([^/]+)\.tsv$', 1) as provided_by
@@ -139,7 +139,7 @@ def _load_file_list(conn: duckdb.DuckDBPyConnection, table_name: str, files: Lis
     # Create table with UNION ALL of all files
     union_query = " UNION ALL ".join(union_parts)
     conn.execute(f"""
-        CREATE TABLE {table_name} AS
+        CREATE OR REPLACE TABLE {table_name} AS
         {union_query}
     """)
 
@@ -218,7 +218,7 @@ def read_mapping_files(conn: duckdb.DuckDBPyConnection, mappings: List[str]) -> 
     # Create table with UNION ALL of all mapping files
     union_query = " UNION ALL ".join(union_parts)
     conn.execute(f"""
-        CREATE TABLE mappings AS
+        CREATE OR REPLACE TABLE mappings AS
         {union_query}
     """)
 
@@ -244,8 +244,7 @@ def apply_mappings(conn: duckdb.DuckDBPyConnection) -> None:
         LEFT JOIN mappings sm_obj ON e.object = sm_obj.object_id;
         
         -- Update edges table with mappings applied, preserving all original columns
-        DROP TABLE edges;
-        CREATE TABLE edges AS
+        CREATE OR REPLACE TABLE edges AS
         SELECT 
             * EXCLUDE (subject, object, original_subject, original_object, mapped_subject, mapped_object),
             COALESCE(mapped_subject, original_subject) as subject,
@@ -269,7 +268,7 @@ def merge_and_clean(conn: duckdb.DuckDBPyConnection) -> None:
     # Create QC tables for tracking issues before cleaning
     conn.execute("""
         -- Duplicate nodes (before cleaning)
-        CREATE TABLE duplicate_nodes AS
+        CREATE OR REPLACE TABLE duplicate_nodes AS
         SELECT * FROM nodes 
         WHERE id IN (
             SELECT id FROM nodes 
@@ -280,7 +279,7 @@ def merge_and_clean(conn: duckdb.DuckDBPyConnection) -> None:
     
     conn.execute("""
         -- Duplicate edges (before cleaning) 
-        CREATE TABLE duplicate_edges AS
+        CREATE OR REPLACE TABLE duplicate_edges AS
         SELECT * FROM edges
         WHERE id IN (
             SELECT id FROM edges
@@ -291,7 +290,7 @@ def merge_and_clean(conn: duckdb.DuckDBPyConnection) -> None:
     
     conn.execute("""
         -- Dangling edges (edges referencing non-existent nodes)
-        CREATE TABLE dangling_edges AS
+        CREATE OR REPLACE TABLE dangling_edges AS
         SELECT e.* FROM edges e
         WHERE e.subject NOT IN (SELECT DISTINCT id FROM nodes)
            OR e.object NOT IN (SELECT DISTINCT id FROM nodes);
@@ -305,8 +304,7 @@ def merge_and_clean(conn: duckdb.DuckDBPyConnection) -> None:
             FROM nodes
         ) WHERE rn = 1;
         
-        DROP TABLE nodes;
-        CREATE TABLE nodes AS SELECT * FROM clean_nodes;
+        CREATE OR REPLACE TABLE nodes AS SELECT * FROM clean_nodes;
         ALTER TABLE nodes DROP COLUMN rn;
     """)
     
@@ -320,8 +318,7 @@ def merge_and_clean(conn: duckdb.DuckDBPyConnection) -> None:
               AND e.object IN (SELECT DISTINCT id FROM nodes)
         ) WHERE rn = 1;
         
-        DROP TABLE edges;
-        CREATE TABLE edges AS SELECT * FROM clean_edges;
+        CREATE OR REPLACE TABLE edges AS SELECT * FROM clean_edges;
         ALTER TABLE edges DROP COLUMN rn;
     """)
 
@@ -336,7 +333,7 @@ def create_qc_aggregations(conn: duckdb.DuckDBPyConnection) -> None:
     
     # Node statistics aggregation
     conn.execute("""
-        CREATE TABLE node_stats AS
+        CREATE OR REPLACE TABLE node_stats AS
         SELECT 
             provided_by,
             category,
@@ -348,7 +345,7 @@ def create_qc_aggregations(conn: duckdb.DuckDBPyConnection) -> None:
     
     # Edge statistics aggregation with subject/object categories from joins
     conn.execute("""
-        CREATE TABLE edge_stats AS
+        CREATE OR REPLACE TABLE edge_stats AS
         SELECT 
             e.provided_by,
             e.category as edge_category,

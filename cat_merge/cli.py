@@ -12,7 +12,8 @@ from cat_merge.duckdb_merge import merge_duckdb
               help='Boolean for whether to generate a qc report (defaults to True')
 @click.option('--engine', type=click.Choice(['pandas', 'duckdb']), default='duckdb',
               help='Merge engine to use: duckdb (default, faster) or pandas for compatibility')
-def main(name, source, mapping, output_dir, qc_report, engine):
+@click.option('--schema', help='Optional path to LinkML schema file for multivalued field detection')
+def main(name, source, mapping, output_dir, qc_report, engine, schema):
     """
     Command line interface for merging nodes and edges into a knowledge graph.
 
@@ -30,7 +31,7 @@ def main(name, source, mapping, output_dir, qc_report, engine):
     if engine == 'pandas':
         pandas_merge(name=name, source=source, mappings=mapping, output_dir=output_dir, qc_report=qc_report)
     else:
-        merge_duckdb(name=name, source=source, mappings=mapping, output_dir=output_dir, qc_report=qc_report)
+        merge_duckdb(name=name, source=source, mappings=mapping, output_dir=output_dir, qc_report=qc_report, schema_path=schema)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,58 @@ import duckdb
 import os
 from typing import List, Optional, Union
 from pathlib import Path
+from cat_merge.schema_utils import get_schema_parser, split_multivalued_field
+
+
+def _generate_select_with_multivalued_splits(conn: duckdb.DuckDBPyConnection, temp_table: str, schema_path: Optional[str] = None) -> str:
+    """
+    Generate a SELECT statement that splits pipe-delimited multivalued fields into arrays.
+    
+    Args:
+        conn: DuckDB connection
+        temp_table: Name of temporary table to read from
+        schema_path: Optional schema path for multivalued field detection
+        
+    Returns:
+        SQL SELECT statement with appropriate column transformations
+    """
+    # Get column names from the temporary table
+    columns_result = conn.execute(f"DESCRIBE {temp_table}").fetchall()
+    column_names = [col[0] for col in columns_result]
+    
+    # Get schema parser if available
+    try:
+        schema_parser = get_schema_parser(schema_path) if schema_path or True else None
+    except Exception:
+        schema_parser = None
+    
+    # Build SELECT clause with conditional column transformation
+    select_parts = []
+    for col_name in column_names:
+        # Skip filename and provided_by (handled separately)
+        if col_name in ('filename', 'provided_by'):
+            continue
+            
+        # Check if this column is multivalued according to schema
+        is_multivalued = False
+        if schema_parser:
+            try:
+                is_multivalued = schema_parser.is_field_multivalued(col_name)
+            except Exception:
+                is_multivalued = False
+        
+        if is_multivalued:
+            # Split pipe-delimited values into arrays, handle empty/null values
+            select_parts.append(f"""
+                CASE 
+                    WHEN {col_name} IS NULL OR trim({col_name}) = '' THEN NULL
+                    ELSE list_filter(string_split(trim({col_name}), '|'), x -> trim(x) != '')
+                END as {col_name}""")
+        else:
+            # Keep as regular string column
+            select_parts.append(f"{col_name}")
+    
+    return ",\n                ".join(select_parts)
 
 
 def read_kg_files(
@@ -10,7 +62,8 @@ def read_kg_files(
     edges: List[str] = None,
     nodes_match: str = "_nodes",
     edges_match: str = "_edges",
-    database_path: str = None
+    database_path: str = None,
+    schema_path: str = None
 ) -> duckdb.DuckDBPyConnection:
     """
     Read knowledge graph files into DuckDB tables.
@@ -22,6 +75,7 @@ def read_kg_files(
         nodes_match: String pattern to match node files
         edges_match: String pattern to match edge files
         database_path: Optional path to persistent database file (if None, uses in-memory)
+        schema_path: Optional path to LinkML schema file for multivalued field detection
         
     Returns:
         DuckDB connection with 'nodes' and 'edges' tables loaded
@@ -52,14 +106,13 @@ def read_kg_files(
                               ignore_errors=true)
         """)
         
-        # Check if provided_by column exists and create appropriate SELECT
-        has_provided_by = conn.execute("SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'temp_nodes' AND column_name = 'provided_by'").fetchone()[0] > 0
-        exclude_clause = "filename, provided_by" if has_provided_by else "filename"
+        # Generate SELECT with multivalued field splitting
+        select_columns = _generate_select_with_multivalued_splits(conn, 'temp_nodes', schema_path)
         
         conn.execute(f"""
             CREATE OR REPLACE TABLE nodes AS
             SELECT 
-                * EXCLUDE ({exclude_clause}),
+                {select_columns},
                 regexp_extract(filename, '/([^/]+)\.tsv$', 1) as provided_by
             FROM temp_nodes
         """)        
@@ -77,22 +130,21 @@ def read_kg_files(
                               ignore_errors=true)
         """)
         
-        # Check if provided_by column exists and create appropriate SELECT
-        has_provided_by = conn.execute("SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'temp_edges' AND column_name = 'provided_by'").fetchone()[0] > 0
-        exclude_clause = "filename, provided_by" if has_provided_by else "filename"
+        # Generate SELECT with multivalued field splitting
+        select_columns = _generate_select_with_multivalued_splits(conn, 'temp_edges', schema_path)
         
         conn.execute(f"""
             CREATE OR REPLACE TABLE edges AS
             SELECT 
-                * EXCLUDE ({exclude_clause}),
+                {select_columns},
                 regexp_extract(filename, '/([^/]+)\.tsv$', 1) as provided_by
             FROM temp_edges
         """)
         
     elif nodes and edges:
         # Read individual file lists
-        _load_file_list(conn, "nodes", nodes, nodes_match)
-        _load_file_list(conn, "edges", edges, edges_match)
+        _load_file_list(conn, "nodes", nodes, nodes_match, schema_path)
+        _load_file_list(conn, "edges", edges, edges_match, schema_path)
         
     else:
         raise ValueError("Must specify either source directory or both nodes and edges file lists")
@@ -100,8 +152,8 @@ def read_kg_files(
     return conn
 
 
-def _load_file_list(conn: duckdb.DuckDBPyConnection, table_name: str, files: List[str], match_pattern: str):
-    """Load a list of files into a single table with provided_by column."""
+def _load_file_list(conn: duckdb.DuckDBPyConnection, table_name: str, files: List[str], match_pattern: str, schema_path: Optional[str] = None):
+    """Load a list of files into a single table with provided_by column and multivalued field support."""
     
     # Build UNION ALL query for all files with their provided_by values
     union_parts = []
@@ -121,20 +173,15 @@ def _load_file_list(conn: duckdb.DuckDBPyConnection, table_name: str, files: Lis
                               ignore_errors=true)
         """)
         
-        # Check if provided_by column exists
-        has_provided_by = conn.execute(f"SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '{temp_table}' AND column_name = 'provided_by'").fetchone()[0] > 0
-        exclude_clause = "provided_by" if has_provided_by else ""
+        # Generate SELECT with multivalued field splitting
+        select_columns = _generate_select_with_multivalued_splits(conn, temp_table, schema_path)
         
-        if exclude_clause:
-            union_parts.append(f"""
-                SELECT * EXCLUDE ({exclude_clause}), '{provided_by}' as provided_by
-                FROM {temp_table}
-            """)
-        else:
-            union_parts.append(f"""
-                SELECT *, '{provided_by}' as provided_by
-                FROM {temp_table}
-            """)
+        union_parts.append(f"""
+            SELECT 
+                {select_columns},
+                '{provided_by}' as provided_by
+            FROM {temp_table}
+        """)
     
     # Create table with UNION ALL of all files
     union_query = " UNION ALL ".join(union_parts)

@@ -21,7 +21,8 @@ def merge_duckdb(
     edges: List[str] = None,
     mappings: List[str] = None,
     output_dir: str = "merged-output",
-    qc_report: bool = True
+    qc_report: bool = True,
+    schema_path: str = None
 ):
     """
     Merge knowledge graph files using DuckDB for improved performance.
@@ -34,6 +35,7 @@ def merge_duckdb(
         mappings: Optional list of SSSOM mapping files
         output_dir: Directory to output knowledge graph
         qc_report: Whether to generate a QC report (defaults to True)
+        schema_path: Optional path to LinkML schema for multivalued field detection
     """
     start_time = time.time()
     timing = {}
@@ -63,7 +65,7 @@ Merging KG files with DuckDB...
     # Read files into DuckDB (persistent database)
     step_start = time.time()
     print("Reading node and edge files into DuckDB...")
-    conn = read_kg_files(source=source, nodes=nodes, edges=edges, database_path=database_path)
+    conn = read_kg_files(source=source, nodes=nodes, edges=edges, database_path=database_path, schema_path=schema_path)
     timing['read_files'] = time.time() - step_start
     
     # Read mappings if provided

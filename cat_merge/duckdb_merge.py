@@ -11,7 +11,7 @@ from cat_merge.duckdb_utils import (
     create_qc_aggregations,
     write_output_files
 )
-from cat_merge.duckdb_qc import create_qc_report_duckdb
+from cat_merge.duckdb_qc import create_qc_report_duckdb, create_graph_stats_report_duckdb
 
 
 def merge_duckdb(
@@ -22,6 +22,7 @@ def merge_duckdb(
     mappings: List[str] = None,
     output_dir: str = "merged-output",
     qc_report: bool = True,
+    graph_stats: bool = False,
     schema_path: str = None
 ):
     """
@@ -35,6 +36,7 @@ def merge_duckdb(
         mappings: Optional list of SSSOM mapping files
         output_dir: Directory to output knowledge graph
         qc_report: Whether to generate a QC report (defaults to True)
+        graph_stats: Whether to generate comprehensive graph statistics report (defaults to False)
         schema_path: Optional path to LinkML schema for multivalued field detection
     """
     start_time = time.time()
@@ -48,6 +50,7 @@ Merging KG files with DuckDB...
   edges: {edges} 
   mappings: {mappings}
   output_dir: {output_dir}
+  graph_stats: {graph_stats}
 """)
     
     # Validate arguments
@@ -109,6 +112,18 @@ Merging KG files with DuckDB...
     else:
         timing['qc_report'] = 0
     
+    # Generate graph statistics report if requested
+    if graph_stats:
+        step_start = time.time()
+        print("Generating graph statistics report...")
+        graph_stats_data = create_graph_stats_report_duckdb(conn)
+        
+        with open(f"{output_dir}/graph_stats.yaml", "w") as stats_file:
+            yaml.dump(graph_stats_data, stats_file, default_flow_style=False)
+        timing['graph_stats'] = time.time() - step_start
+    else:
+        timing['graph_stats'] = 0
+    
     # Close connection
     conn.close()
     
@@ -123,6 +138,7 @@ Merging KG files with DuckDB...
     print(f"QC aggregations:   {timing['qc_aggregations']:.2f}s")
     print(f"Write files:       {timing['write_files']:.2f}s")
     print(f"QC report:         {timing['qc_report']:.2f}s")
+    print(f"Graph stats:       {timing['graph_stats']:.2f}s")
     print(f"=====================")
     print(f"TOTAL TIME:        {total_time:.2f}s")
     print(f"\nMerge completed! Output written to {output_dir}")

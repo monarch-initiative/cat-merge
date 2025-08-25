@@ -229,3 +229,230 @@ def _df_to_category_pairs(df) -> List[Dict]:
         })
     
     return result
+
+
+def create_graph_stats_report_duckdb(conn: duckdb.DuckDBPyConnection) -> Dict:
+    """
+    Create comprehensive graph statistics report similar to merged_graph_stats.yaml.
+    
+    Args:
+        conn: DuckDB connection with nodes and edges tables
+        
+    Returns:
+        Dictionary containing comprehensive graph statistics
+    """
+    
+    # Get total counts
+    total_nodes = conn.execute("SELECT COUNT(*) FROM nodes").fetchone()[0]
+    total_edges = conn.execute("SELECT COUNT(*) FROM edges").fetchone()[0]
+    
+    # Build the comprehensive report structure
+    report = {
+        "graph_name": "Graph",
+        "node_stats": _generate_node_stats(conn, total_nodes),
+        "edge_stats": _generate_edge_stats(conn, total_edges)
+    }
+    
+    return report
+
+
+def _generate_node_stats(conn: duckdb.DuckDBPyConnection, total_nodes: int) -> Dict:
+    """Generate comprehensive node statistics."""
+    
+    # Get node categories and their counts
+    # Handle both string and array categories
+    category_counts = conn.execute("""
+        SELECT 
+            CASE 
+                WHEN category IS NULL THEN 'unknown'
+                WHEN typeof(category) = 'VARCHAR[]' THEN array_to_string(category, '|')
+                ELSE CAST(category AS VARCHAR)
+            END as category,
+            COUNT(*) as count
+        FROM nodes
+        GROUP BY category
+        ORDER BY category
+    """).fetchall()
+    
+    # Get ID prefixes and their counts
+    id_prefix_counts = conn.execute("""
+        SELECT 
+            split_part(id, ':', 1) as prefix,
+            COUNT(*) as count
+        FROM nodes
+        GROUP BY split_part(id, ':', 1)
+        ORDER BY prefix
+    """).fetchall()
+    
+    # Get provided_by sources
+    provided_by_sources = conn.execute("""
+        SELECT DISTINCT provided_by
+        FROM nodes
+        ORDER BY provided_by
+    """).fetchall()
+    
+    # Build count_by_category structure
+    count_by_category = {}
+    for category, count in category_counts:
+        # Get provided_by breakdown for this category
+        provided_by_breakdown = conn.execute("""
+            SELECT provided_by, COUNT(*) as count
+            FROM nodes
+            WHERE CASE 
+                WHEN category IS NULL THEN 'unknown'
+                WHEN typeof(category) = 'VARCHAR[]' THEN array_to_string(category, '|')
+                ELSE CAST(category AS VARCHAR)
+            END = ?
+            GROUP BY provided_by
+            ORDER BY provided_by
+        """, [category]).fetchall()
+        
+        count_by_category[category] = {
+            "count": count,
+            "provided_by": {pb: {"count": c} for pb, c in provided_by_breakdown}
+        }
+    
+    # Build count_by_id_prefixes structure
+    count_by_id_prefixes = {prefix: count for prefix, count in id_prefix_counts}
+    
+    # Build count_by_id_prefixes_by_category
+    count_by_id_prefixes_by_category = {}
+    for category, _ in category_counts:
+        prefix_counts = conn.execute("""
+            SELECT 
+                split_part(id, ':', 1) as prefix,
+                COUNT(*) as count
+            FROM nodes
+            WHERE CASE 
+                WHEN category IS NULL THEN 'unknown'
+                WHEN typeof(category) = 'VARCHAR[]' THEN array_to_string(category, '|')
+                ELSE CAST(category AS VARCHAR)
+            END = ?
+            GROUP BY split_part(id, ':', 1)
+            ORDER BY prefix
+        """, [category]).fetchall()
+        
+        if prefix_counts:
+            count_by_id_prefixes_by_category[category] = {prefix: count for prefix, count in prefix_counts}
+    
+    return {
+        "total_nodes": total_nodes,
+        "count_by_category": count_by_category,
+        "count_by_id_prefixes": count_by_id_prefixes,
+        "count_by_id_prefixes_by_category": count_by_id_prefixes_by_category,
+        "node_categories": [cat for cat, _ in category_counts],
+        "node_id_prefixes": [prefix for prefix, _ in id_prefix_counts],
+        "node_id_prefixes_by_category": {
+            category: list({prefix: count for prefix, count in conn.execute("""
+                SELECT split_part(id, ':', 1) as prefix, COUNT(*) as count
+                FROM nodes WHERE CASE 
+                    WHEN category IS NULL THEN 'unknown'
+                    WHEN typeof(category) = 'VARCHAR[]' THEN array_to_string(category, '|')
+                    ELSE CAST(category AS VARCHAR)
+                END = ?
+                GROUP BY split_part(id, ':', 1)
+                ORDER BY count DESC
+            """, [category]).fetchall()}.keys())
+            for category, _ in category_counts
+        },
+        "provided_by": [pb[0] for pb in provided_by_sources]
+    }
+
+
+def _generate_edge_stats(conn: duckdb.DuckDBPyConnection, total_edges: int) -> Dict:
+    """Generate comprehensive edge statistics."""
+    
+    # Get all predicates
+    predicate_counts = conn.execute("""
+        SELECT 
+            COALESCE(predicate, 'unknown') as predicate,
+            COUNT(*) as count
+        FROM edges
+        GROUP BY predicate
+        ORDER BY predicate
+    """).fetchall()
+    
+    # Get all provided_by sources
+    provided_by_sources = conn.execute("""
+        SELECT DISTINCT provided_by
+        FROM edges
+        ORDER BY provided_by
+    """).fetchall()
+    
+    # Build count_by_predicates structure
+    count_by_predicates = {}
+    for predicate, count in predicate_counts:
+        # Get provided_by breakdown for this predicate
+        provided_by_breakdown = conn.execute("""
+            SELECT provided_by, COUNT(*) as count
+            FROM edges
+            WHERE COALESCE(predicate, 'unknown') = ?
+            GROUP BY provided_by
+            ORDER BY provided_by
+        """, [predicate]).fetchall()
+        
+        count_by_predicates[predicate] = {
+            "count": count,
+            "provided_by": {pb: {"count": c} for pb, c in provided_by_breakdown}
+        }
+    
+    # Build count_by_spo (Subject-Predicate-Object patterns)
+    spo_counts = conn.execute("""
+        SELECT 
+            CASE 
+                WHEN sn.category IS NULL THEN 'unknown'
+                WHEN typeof(sn.category) = 'VARCHAR[]' THEN array_to_string(sn.category, '|')
+                ELSE CAST(sn.category AS VARCHAR)
+            END as subject_category,
+            COALESCE(e.predicate, 'unknown') as predicate,
+            CASE 
+                WHEN on_node.category IS NULL THEN 'unknown'
+                WHEN typeof(on_node.category) = 'VARCHAR[]' THEN array_to_string(on_node.category, '|')
+                ELSE CAST(on_node.category AS VARCHAR)
+            END as object_category,
+            COUNT(*) as count
+        FROM edges e
+        LEFT JOIN nodes sn ON e.subject = sn.id  
+        LEFT JOIN nodes on_node ON e.object = on_node.id
+        GROUP BY subject_category, e.predicate, object_category
+        HAVING COUNT(*) > 0
+        ORDER BY subject_category, e.predicate, object_category
+    """).fetchall()
+    
+    count_by_spo = {}
+    for subj_cat, pred, obj_cat, count in spo_counts:
+        spo_key = f"{subj_cat}-{pred}-{obj_cat}"
+        
+        # Get provided_by breakdown for this SPO pattern
+        provided_by_breakdown = conn.execute("""
+            SELECT e.provided_by, COUNT(*) as count
+            FROM edges e
+            LEFT JOIN nodes sn ON e.subject = sn.id  
+            LEFT JOIN nodes on_node ON e.object = on_node.id
+            WHERE CASE 
+                WHEN sn.category IS NULL THEN 'unknown'
+                WHEN typeof(sn.category) = 'VARCHAR[]' THEN array_to_string(sn.category, '|')
+                ELSE CAST(sn.category AS VARCHAR)
+            END = ?
+              AND COALESCE(e.predicate, 'unknown') = ?
+              AND CASE 
+                WHEN on_node.category IS NULL THEN 'unknown'
+                WHEN typeof(on_node.category) = 'VARCHAR[]' THEN array_to_string(on_node.category, '|')
+                ELSE CAST(on_node.category AS VARCHAR)
+            END = ?
+            GROUP BY e.provided_by
+            ORDER BY e.provided_by
+        """, [subj_cat, pred, obj_cat]).fetchall()
+        
+        count_by_spo[spo_key] = {
+            "count": count,
+            "provided_by": {pb: {"count": c} for pb, c in provided_by_breakdown}
+        }
+    
+    return {
+        "total_edges": total_edges,
+        "count_by_predicates": count_by_predicates,
+        "count_by_spo": count_by_spo,
+        "predicates": [pred for pred, _ in predicate_counts],
+        "provided_by": [pb[0] for pb in provided_by_sources]
+    }

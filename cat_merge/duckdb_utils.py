@@ -418,7 +418,7 @@ def create_qc_aggregations(conn: duckdb.DuckDBPyConnection) -> None:
 
 def write_output_files(conn: duckdb.DuckDBPyConnection, name: str, output_dir: str) -> None:
     """
-    Write cleaned nodes and edges to TSV files.
+    Write cleaned nodes and edges to TSV files and create tar.gz bundle.
     
     Args:
         conn: DuckDB connection
@@ -426,19 +426,28 @@ def write_output_files(conn: duckdb.DuckDBPyConnection, name: str, output_dir: s
         output_dir: Output directory path
     """
     import os
+    from cat_merge.file_utils import write_tar
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(f"{output_dir}/qc", exist_ok=True)
     
+    # Define file paths
+    nodes_path = f"{output_dir}/{name}_nodes.tsv"
+    edges_path = f"{output_dir}/{name}_edges.tsv"
+    tar_path = f"{output_dir}/{name}.tar.gz"
+    
     # Write main output files
     conn.execute(f"""
-        COPY nodes TO '{output_dir}/{name}_nodes.tsv' 
+        COPY nodes TO '{nodes_path}' 
         WITH (FORMAT CSV, DELIMITER '\t', HEADER);
     """)
     
     conn.execute(f"""
-        COPY edges TO '{output_dir}/{name}_edges.tsv'
+        COPY edges TO '{edges_path}'
         WITH (FORMAT CSV, DELIMITER '\t', HEADER);
     """)
+    
+    # Create tar.gz bundle
+    write_tar(tar_path, [nodes_path, edges_path])
     
     # Write QC files
     conn.execute(f"""

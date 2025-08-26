@@ -118,7 +118,7 @@ Merging KG files with DuckDB...
         print("Generating graph statistics report...")
         graph_stats_data = create_graph_stats_report_duckdb(conn)
         
-        with open(f"{output_dir}/graph_stats.yaml", "w") as stats_file:
+        with open(f"{output_dir}/merged_graph_stats.yaml", "w") as stats_file:
             yaml.dump(graph_stats_data, stats_file, default_flow_style=False)
         timing['graph_stats'] = time.time() - step_start
     else:

@@ -40,34 +40,34 @@ def _get_nodes_report(conn: duckdb.DuckDBPyConnection) -> List[Dict]:
     nodes_report = []
     for (source,) in sources:
         # Get stats for this source
-        source_stats = conn.execute(f"""
+        source_stats = conn.execute("""
             SELECT 
                 SUM(count) as total,
                 COUNT(DISTINCT category) as category_count,
                 COUNT(DISTINCT namespace) as namespace_count
             FROM node_stats 
-            WHERE provided_by = '{source}'
-        """).fetchone()
+            WHERE provided_by = ?
+        """, [source]).fetchone()
         
         total, category_count, namespace_count = source_stats
         
         # Get categories for this source
-        categories = conn.execute(f"""
+        categories = conn.execute("""
             SELECT category, SUM(count) as count
             FROM node_stats 
-            WHERE provided_by = '{source}'
+            WHERE provided_by = ?
             GROUP BY category
             ORDER BY category
-        """).df()
+        """, [source]).df()
         
         # Get namespaces for this source
-        namespaces = conn.execute(f"""
+        namespaces = conn.execute("""
             SELECT namespace, SUM(count) as count  
             FROM node_stats
-            WHERE provided_by = '{source}'
+            WHERE provided_by = ?
             GROUP BY namespace
             ORDER BY namespace
-        """).df()
+        """, [source]).df()
         
         node_report = {
             "name": source,

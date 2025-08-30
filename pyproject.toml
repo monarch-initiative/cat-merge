@@ -14,8 +14,7 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.10"
 click = "^8"
-pandas = ">=2.0.0,<3.0.0"
-duckdb = ">=1.0.0"
+duckdb = ">=1.0.0,<2.0.0"
 mkdocs = "^1.3.0"
 scipy = ">=1.9,<2.0.0"
 linkml-runtime = "^1.7.0"

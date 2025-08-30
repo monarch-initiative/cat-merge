@@ -1,5 +1,4 @@
-# since this is a library, adding poetry.lock
-poetry.lock
+# Removed poetry.lock from ignore - needed for reproducible CI builds
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

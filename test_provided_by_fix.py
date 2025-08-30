@@ -28,7 +28,7 @@ def test_duckdb_individual_files():
                 f.write("id\tcategory\ntest:1\ttest_category\n")
             
             # Test the new DuckDB behavior using our util function
-            from cat_merge.duckdb_utils import _load_file_list
+            from cat_merge.merge_utils import _load_file_list
             conn = duckdb.connect()
             
             if "_nodes" in file_name:
@@ -67,7 +67,7 @@ def test_duckdb_glob_patterns():
                 f.write("id\tcategory\ntest:1\ttest_category\n")
         
         # Test DuckDB glob reading
-        from cat_merge.duckdb_utils import read_kg_files
+        from cat_merge.merge_utils import read_kg_files
         conn = read_kg_files(source=tmpdir)
         
         # Get provided_by values from nodes

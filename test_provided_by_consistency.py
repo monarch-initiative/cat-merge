@@ -67,18 +67,18 @@ def test_regex_patterns():
     print("\n=== DuckDB Regex Extraction (Current) ===")
     for path in test_paths:
         # After fix: Now extracts full filename like pandas
-        result = conn.execute(f"""
-            SELECT regexp_extract('{path}', '/([^/]+)\.tsv$', 1) as extracted
-        """).fetchone()[0]
+        result = conn.execute("""
+            SELECT regexp_extract(?, '/([^/]+)\.tsv$', 1) as extracted
+        """, [path]).fetchone()[0]
         
         print(f"{path} → {result}")
     
     print("\n=== DuckDB Regex Extraction (Should Match Pandas) ===")
     for path in test_paths:
         # Extract just the filename without extension (matching pandas behavior)
-        result = conn.execute(f"""
-            SELECT regexp_extract('{path}', '/([^/]+)\.tsv$', 1) as extracted
-        """).fetchone()[0]
+        result = conn.execute("""
+            SELECT regexp_extract(?, '/([^/]+)\.tsv$', 1) as extracted
+        """, [path]).fetchone()[0]
         
         expected_pandas = Path(path).stem
         print(f"{path} → {result} (pandas: {expected_pandas})")

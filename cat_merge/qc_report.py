@@ -2,7 +2,7 @@ import duckdb
 from typing import Dict, List, Union
 
 
-def create_qc_report_duckdb(conn: duckdb.DuckDBPyConnection) -> Dict:
+def create_qc_report(conn: duckdb.DuckDBPyConnection) -> Dict:
     """
     Create QC report using pre-aggregated DuckDB tables.
     
@@ -231,7 +231,7 @@ def _df_to_category_pairs(df) -> List[Dict]:
     return result
 
 
-def create_graph_stats_report_duckdb(conn: duckdb.DuckDBPyConnection) -> Dict:
+def create_graph_stats_report(conn: duckdb.DuckDBPyConnection) -> Dict:
     """
     Create comprehensive graph statistics report similar to merged_graph_stats.yaml.
     

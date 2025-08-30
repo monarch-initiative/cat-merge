@@ -6,7 +6,7 @@ Test that persistent DuckDB databases can be run multiple times without "Table a
 import tempfile
 import os
 import duckdb
-from cat_merge.merge import merge_duckdb
+from cat_merge.merge import merge
 
 
 def test_rerun_persistent_database():
@@ -17,7 +17,7 @@ def test_rerun_persistent_database():
         
         # First run - creates the database
         print("=== First run ===")
-        merge_duckdb(
+        merge(
             name='test-rerun',
             source='tests/test_data',
             output_dir=tmpdir,
@@ -36,7 +36,7 @@ def test_rerun_persistent_database():
         
         # Second run - should replace existing tables without error
         print("\n=== Second run (testing table replacement) ===")
-        merge_duckdb(
+        merge(
             name='test-rerun',
             source='tests/test_data',
             output_dir=tmpdir,
@@ -73,7 +73,7 @@ def test_multiple_reruns():
         results = []
         for i in range(3):
             print(f"Run {i+1}/3")
-            merge_duckdb(
+            merge(
                 name='multi-test',
                 source='tests/test_data',
                 output_dir=tmpdir,

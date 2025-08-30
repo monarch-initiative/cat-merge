@@ -3,7 +3,7 @@ import time
 import yaml
 from typing import List
 
-from cat_merge.duckdb_utils import (
+from cat_merge.merge_utils import (
     read_kg_files, 
     read_mapping_files,
     apply_mappings,
@@ -11,10 +11,10 @@ from cat_merge.duckdb_utils import (
     create_qc_aggregations,
     write_output_files
 )
-from cat_merge.duckdb_qc import create_qc_report_duckdb, create_graph_stats_report_duckdb
+from cat_merge.qc_report import create_qc_report, create_graph_stats_report
 
 
-def merge_duckdb(
+def merge(
     name: str = "merged-kg",
     source: str = None,
     nodes: List[str] = None,
@@ -104,7 +104,7 @@ Merging KG files with DuckDB...
     if qc_report:
         step_start = time.time()
         print("Generating QC report...")
-        qc_report_data = create_qc_report_duckdb(conn)
+        qc_report_data = create_qc_report(conn)
         
         with open(f"{output_dir}/qc_report.yaml", "w") as report_file:
             yaml.dump(qc_report_data, report_file, default_flow_style=False)
@@ -116,7 +116,7 @@ Merging KG files with DuckDB...
     if graph_stats:
         step_start = time.time()
         print("Generating graph statistics report...")
-        graph_stats_data = create_graph_stats_report_duckdb(conn)
+        graph_stats_data = create_graph_stats_report(conn)
         
         with open(f"{output_dir}/merged_graph_stats.yaml", "w") as stats_file:
             yaml.dump(graph_stats_data, stats_file, default_flow_style=False)
@@ -147,7 +147,7 @@ Merging KG files with DuckDB...
 
 if __name__ == "__main__":
     # Example usage
-    merge_duckdb(
+    merge(
         name="test-kg",
         source="tests/test_data",
         output_dir="test-output"

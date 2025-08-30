@@ -1,5 +1,5 @@
 import click
-from cat_merge.merge import merge_duckdb
+from cat_merge.merge import merge
 
 
 @click.command()
@@ -27,7 +27,7 @@ def main(name, source, mapping, output_dir, qc_report, graph_stats, schema):
     Returns:
         None
     """
-    merge_duckdb(name=name, source=source, mappings=mapping, output_dir=output_dir, qc_report=qc_report, graph_stats=graph_stats, schema_path=schema)
+    merge(name=name, source=source, mappings=mapping, output_dir=output_dir, qc_report=qc_report, graph_stats=graph_stats, schema_path=schema)
 
 
 if __name__ == "__main__":

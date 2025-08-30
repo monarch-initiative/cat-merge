@@ -6,7 +6,7 @@ Test multivalued field handling with LinkML schema integration.
 import tempfile
 import os
 import duckdb
-from cat_merge.merge import merge_duckdb
+from cat_merge.merge import merge
 from cat_merge.schema_utils import SchemaParser, is_field_multivalued
 
 
@@ -65,7 +65,7 @@ def test_multivalued_field_processing():
         
         # Test without schema (should not split)
         print("=== Testing without schema ===")
-        merge_duckdb(
+        merge(
             name='test-no-schema',
             nodes=[nodes_file],
             edges=[edges_file],
@@ -94,7 +94,7 @@ def test_multivalued_field_processing():
         # Test with schema (should split multivalued fields)
         print("\n=== Testing with schema (Biolink Model) ===")
         try:
-            merge_duckdb(
+            merge(
                 name='test-with-schema',
                 nodes=[nodes_file],
                 edges=[edges_file],

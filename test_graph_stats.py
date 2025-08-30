@@ -6,7 +6,7 @@ Test graph statistics report generation.
 import tempfile
 import os
 import yaml
-from cat_merge.merge import merge_duckdb
+from cat_merge.merge import merge
 
 
 def test_graph_stats_report():
@@ -36,7 +36,7 @@ def test_graph_stats_report():
         
         # Run merge with graph stats enabled
         print("Running merge with graph stats enabled...")
-        merge_duckdb(
+        merge(
             name='test-graph-stats',
             nodes=[nodes_file],
             edges=[edges_file],
@@ -127,7 +127,7 @@ def test_graph_stats_disabled():
         
         # Run merge with graph stats disabled (default)
         print("Running merge with graph stats disabled...")
-        merge_duckdb(
+        merge(
             name='test-no-stats',
             nodes=[nodes_file],
             edges=[edges_file],

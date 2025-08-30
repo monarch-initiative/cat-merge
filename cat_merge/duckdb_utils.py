@@ -80,7 +80,7 @@ def read_kg_files(
     Returns:
         DuckDB connection with 'nodes' and 'edges' tables loaded
     """
-    conn = duckdb.connect(database_path)
+    conn = duckdb.connect(database_path or ":memory:")
     
     if source is not None:
         if nodes or edges:
@@ -446,8 +446,8 @@ def write_output_files(conn: duckdb.DuckDBPyConnection, name: str, output_dir: s
         WITH (FORMAT CSV, DELIMITER '\t', HEADER);
     """)
     
-    # Create tar.gz bundle
-    write_tar(tar_path, [nodes_path, edges_path])
+    # Create tar.gz bundle but keep original files
+    write_tar(tar_path, [nodes_path, edges_path], delete_files=False)
     
     # Write QC files
     conn.execute(f"""

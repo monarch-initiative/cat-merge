@@ -46,7 +46,7 @@ def test_graph_stats_report():
         )
         
         # Check that graph stats file was created
-        stats_file = os.path.join(tmpdir, 'graph_stats.yaml')
+        stats_file = os.path.join(tmpdir, 'merged_graph_stats.yaml')
         assert os.path.exists(stats_file), "Graph stats file was not created"
         
         # Load and examine the stats
@@ -137,7 +137,7 @@ def test_graph_stats_disabled():
         )
         
         # Check that graph stats file was NOT created
-        stats_file = os.path.join(tmpdir, 'graph_stats.yaml')
+        stats_file = os.path.join(tmpdir, 'merged_graph_stats.yaml')
         assert not os.path.exists(stats_file), "Graph stats file should not be created when disabled"
         
         print("✓ Graph stats disabled test passed!")

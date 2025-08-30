@@ -6,7 +6,7 @@ Test graph statistics report generation.
 import tempfile
 import os
 import yaml
-from cat_merge.duckdb_merge import merge_duckdb
+from cat_merge.merge import merge_duckdb
 
 
 def test_graph_stats_report():

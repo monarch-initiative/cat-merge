@@ -426,7 +426,7 @@ def write_output_files(conn: duckdb.DuckDBPyConnection, name: str, output_dir: s
         output_dir: Output directory path
     """
     import os
-    from cat_merge.file_utils import write_tar
+    from cat_merge.tar_utils import write_tar
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(f"{output_dir}/qc", exist_ok=True)
     

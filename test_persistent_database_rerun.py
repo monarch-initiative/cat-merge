@@ -6,7 +6,7 @@ Test that persistent DuckDB databases can be run multiple times without "Table a
 import tempfile
 import os
 import duckdb
-from cat_merge.duckdb_merge import merge_duckdb
+from cat_merge.merge import merge_duckdb
 
 
 def test_rerun_persistent_database():

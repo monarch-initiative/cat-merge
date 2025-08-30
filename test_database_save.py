@@ -6,7 +6,7 @@ Test that DuckDB merge creates a persistent database file directly (no copying).
 import tempfile
 import os
 import duckdb
-from cat_merge.duckdb_merge import merge_duckdb
+from cat_merge.merge import merge_duckdb
 
 
 def test_database_save():

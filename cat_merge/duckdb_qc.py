@@ -1,33 +1,42 @@
 import duckdb
+import yaml
 from typing import Dict, List, Union
 
 
 def create_qc_report_duckdb(conn: duckdb.DuckDBPyConnection) -> Dict:
     """
     Create QC report using pre-aggregated DuckDB tables.
-    
+
     Args:
         conn: DuckDB connection with node_stats and edge_stats tables
-        
+
     Returns:
         Dictionary containing QC report data
     """
-    
+
     # Get basic counts
     total_nodes = conn.execute("SELECT SUM(count) FROM node_stats").fetchone()[0]
     total_edges = conn.execute("SELECT SUM(count) FROM edge_stats").fetchone()[0]
-    
+
     # Get nodes report by provided_by
     nodes_by_source = _get_nodes_report(conn)
-    
-    # Get edges report by provided_by  
+
+    # Get edges report by provided_by
     edges_by_source = _get_edges_report(conn)
-    
+
+    # Get QC reports for duplicate and dangling data
+    duplicate_nodes_report = _get_duplicate_nodes_report(conn)
+    duplicate_edges_report = _get_duplicate_edges_report(conn)
+    dangling_edges_report = _get_dangling_edges_report(conn)
+
     return {
         "total_nodes": total_nodes,
         "total_edges": total_edges,
         "nodes": nodes_by_source,
-        "edges": edges_by_source
+        "edges": edges_by_source,
+        "duplicate_nodes": duplicate_nodes_report,
+        "duplicate_edges": duplicate_edges_report,
+        "dangling_edges": dangling_edges_report
     }
 
 
@@ -456,3 +465,359 @@ def _generate_edge_stats(conn: duckdb.DuckDBPyConnection, total_edges: int) -> D
         "predicates": [pred for pred, _ in predicate_counts],
         "provided_by": [pb[0] for pb in provided_by_sources]
     }
+
+
+def _get_duplicate_nodes_report(conn: duckdb.DuckDBPyConnection) -> List[Dict]:
+    """Create duplicate nodes section of QC report."""
+    # Check if duplicate_nodes table exists
+    try:
+        conn.execute("SELECT COUNT(*) FROM duplicate_nodes").fetchone()
+        table_exists = True
+    except:
+        table_exists = False
+
+    if not table_exists:
+        return []
+
+    # Get provided_by sources from duplicate nodes
+    sources = conn.execute("""
+        SELECT DISTINCT provided_by
+        FROM duplicate_nodes
+        ORDER BY provided_by
+    """).fetchall()
+
+    duplicate_nodes_report = []
+    for (source,) in sources:
+        # Get stats for this source
+        source_stats = conn.execute("""
+            SELECT COUNT(*) as total
+            FROM duplicate_nodes
+            WHERE provided_by = ?
+        """, [source]).fetchone()
+
+        total = source_stats[0]
+
+        # Get categories for this source
+        categories = conn.execute("""
+            SELECT
+                CASE
+                    WHEN category IS NULL THEN 'unknown'
+                    WHEN typeof(category) = 'VARCHAR[]' THEN array_to_string(category, '|')
+                    ELSE CAST(category AS VARCHAR)
+                END as category,
+                COUNT(*) as count
+            FROM duplicate_nodes
+            WHERE provided_by = ?
+            GROUP BY category
+            ORDER BY category
+        """, [source]).df()
+
+        # Get namespaces for this source
+        namespaces = conn.execute("""
+            SELECT
+                split_part(id, ':', 1) as namespace,
+                COUNT(*) as count
+            FROM duplicate_nodes
+            WHERE provided_by = ?
+            GROUP BY split_part(id, ':', 1)
+            ORDER BY namespace
+        """, [source]).df()
+
+        duplicate_node_report = {
+            "name": source,
+            "total_number": total,
+            "categories": _df_to_yaml_list(categories, 'category'),
+            "namespaces": _df_to_yaml_list(namespaces, 'namespace')
+        }
+
+        duplicate_nodes_report.append(duplicate_node_report)
+
+    return duplicate_nodes_report
+
+
+def _get_duplicate_edges_report(conn: duckdb.DuckDBPyConnection) -> List[Dict]:
+    """Create duplicate edges section of QC report."""
+    # Check if duplicate_edges table exists
+    try:
+        conn.execute("SELECT COUNT(*) FROM duplicate_edges").fetchone()
+        table_exists = True
+    except:
+        table_exists = False
+
+    if not table_exists:
+        return []
+
+    # Get provided_by sources from duplicate edges
+    sources = conn.execute("""
+        SELECT DISTINCT provided_by
+        FROM duplicate_edges
+        ORDER BY provided_by
+    """).fetchall()
+
+    duplicate_edges_report = []
+    for (source,) in sources:
+        # Get basic stats for this source
+        source_stats = conn.execute("""
+            SELECT COUNT(*) as total
+            FROM duplicate_edges
+            WHERE provided_by = ?
+        """, [source]).fetchone()
+
+        total = source_stats[0]
+
+        # Get categories for this source (edge categories)
+        categories = conn.execute("""
+            SELECT
+                CASE
+                    WHEN category IS NULL THEN 'unknown'
+                    WHEN typeof(category) = 'VARCHAR[]' THEN array_to_string(category, '|')
+                    ELSE CAST(category AS VARCHAR)
+                END as category,
+                COUNT(*) as count
+            FROM duplicate_edges
+            WHERE provided_by = ?
+            GROUP BY category
+            ORDER BY category
+        """, [source]).df()
+
+        # Get namespaces (union of subject and object namespaces)
+        namespaces = conn.execute("""
+            SELECT namespace, SUM(count) as count FROM (
+                SELECT split_part(subject, ':', 1) as namespace, COUNT(*) as count
+                FROM duplicate_edges
+                WHERE provided_by = ?
+                GROUP BY split_part(subject, ':', 1)
+                UNION ALL
+                SELECT split_part(object, ':', 1) as namespace, COUNT(*) as count
+                FROM duplicate_edges
+                WHERE provided_by = ?
+                GROUP BY split_part(object, ':', 1)
+            )
+            GROUP BY namespace
+            ORDER BY namespace
+        """, [source, source]).df()
+
+        # Get predicates for this source
+        predicates = _get_qc_predicates_report(conn, source, "duplicate_edges")
+
+        # Get node types (subject/object categories)
+        node_types = _get_qc_node_types_report(conn, source, "duplicate_edges")
+
+        duplicate_edge_report = {
+            "name": source,
+            "total_number": total,
+            "categories": _df_to_yaml_list(categories, 'category'),
+            "namespaces": _df_to_yaml_list(namespaces, 'namespace'),
+            "predicates": predicates,
+            "node_types": node_types
+        }
+
+        duplicate_edges_report.append(duplicate_edge_report)
+
+    return duplicate_edges_report
+
+
+def _get_dangling_edges_report(conn: duckdb.DuckDBPyConnection) -> List[Dict]:
+    """Create dangling edges section of QC report."""
+    # Check if dangling_edges table exists
+    try:
+        conn.execute("SELECT COUNT(*) FROM dangling_edges").fetchone()
+        table_exists = True
+    except:
+        table_exists = False
+
+    if not table_exists:
+        return []
+
+    # Get provided_by sources from dangling edges
+    sources = conn.execute("""
+        SELECT DISTINCT provided_by
+        FROM dangling_edges
+        ORDER BY provided_by
+    """).fetchall()
+
+    dangling_edges_report = []
+    for (source,) in sources:
+        # Get basic stats for this source
+        source_stats = conn.execute("""
+            SELECT COUNT(*) as total
+            FROM dangling_edges
+            WHERE provided_by = ?
+        """, [source]).fetchone()
+
+        total = source_stats[0]
+
+        # Get categories for this source (edge categories)
+        categories = conn.execute("""
+            SELECT
+                CASE
+                    WHEN category IS NULL THEN 'unknown'
+                    WHEN typeof(category) = 'VARCHAR[]' THEN array_to_string(category, '|')
+                    ELSE CAST(category AS VARCHAR)
+                END as category,
+                COUNT(*) as count
+            FROM dangling_edges
+            WHERE provided_by = ?
+            GROUP BY category
+            ORDER BY category
+        """, [source]).df()
+
+        # Get namespaces (union of subject and object namespaces)
+        namespaces = conn.execute("""
+            SELECT namespace, SUM(count) as count FROM (
+                SELECT split_part(subject, ':', 1) as namespace, COUNT(*) as count
+                FROM dangling_edges
+                WHERE provided_by = ?
+                GROUP BY split_part(subject, ':', 1)
+                UNION ALL
+                SELECT split_part(object, ':', 1) as namespace, COUNT(*) as count
+                FROM dangling_edges
+                WHERE provided_by = ?
+                GROUP BY split_part(object, ':', 1)
+            )
+            GROUP BY namespace
+            ORDER BY namespace
+        """, [source, source]).df()
+
+        # Get predicates for this source
+        predicates = _get_qc_predicates_report(conn, source, "dangling_edges")
+
+        # Get node types (subject/object categories)
+        node_types = _get_qc_node_types_report(conn, source, "dangling_edges")
+
+        dangling_edge_report = {
+            "name": source,
+            "total_number": total,
+            "categories": _df_to_yaml_list(categories, 'category'),
+            "namespaces": _df_to_yaml_list(namespaces, 'namespace'),
+            "predicates": predicates,
+            "node_types": node_types
+        }
+
+        dangling_edges_report.append(dangling_edge_report)
+
+    return dangling_edges_report
+
+
+def _get_qc_predicates_report(conn: duckdb.DuckDBPyConnection, source: str, table_name: str) -> List[Dict]:
+    """Get predicate breakdown for a QC table (dangling_edges or duplicate_edges)."""
+
+    predicates = conn.execute(f"""
+        SELECT DISTINCT predicate
+        FROM {table_name}
+        WHERE provided_by = ? AND predicate IS NOT NULL
+        ORDER BY predicate
+    """, [source]).fetchall()
+
+    predicate_reports = []
+    for (predicate,) in predicates:
+        # Get stats for this predicate
+        pred_stats = conn.execute(f"""
+            SELECT COUNT(*) as total
+            FROM {table_name}
+            WHERE provided_by = ? AND predicate = ?
+        """, [source, predicate]).fetchone()
+
+        total = pred_stats[0]
+
+        # Get subject/object categories for this predicate by joining with nodes
+        categories = conn.execute(f"""
+            SELECT
+                COALESCE(
+                    CASE
+                        WHEN sn.category IS NULL THEN 'missing'
+                        WHEN typeof(sn.category) = 'VARCHAR[]' THEN array_to_string(sn.category, '|')
+                        ELSE CAST(sn.category AS VARCHAR)
+                    END, 'missing'
+                ) as subject_category,
+                COALESCE(
+                    CASE
+                        WHEN on_node.category IS NULL THEN 'missing'
+                        WHEN typeof(on_node.category) = 'VARCHAR[]' THEN array_to_string(on_node.category, '|')
+                        ELSE CAST(on_node.category AS VARCHAR)
+                    END, 'missing'
+                ) as object_category,
+                COUNT(*) as count
+            FROM {table_name} e
+            LEFT JOIN nodes sn ON e.subject = sn.id
+            LEFT JOIN nodes on_node ON e.object = on_node.id
+            WHERE e.provided_by = ? AND e.predicate = ?
+            GROUP BY subject_category, object_category
+            ORDER BY subject_category, object_category
+        """, [source, predicate]).df()
+
+        predicate_report = {
+            "name": predicate,
+            "total_number": total,
+            "categories": _df_to_category_pairs(categories)
+        }
+
+        predicate_reports.append(predicate_report)
+
+    return predicate_reports
+
+
+def _get_qc_node_types_report(conn: duckdb.DuckDBPyConnection, source: str, table_name: str) -> List[Dict]:
+    """Get node type breakdown for a QC table (dangling_edges or duplicate_edges)."""
+
+    # Get unique subject/object category combinations by joining with nodes
+    node_type_stats = conn.execute(f"""
+        SELECT
+            COALESCE(
+                CASE
+                    WHEN sn.category IS NULL THEN 'missing'
+                    WHEN typeof(sn.category) = 'VARCHAR[]' THEN array_to_string(sn.category, '|')
+                    ELSE CAST(sn.category AS VARCHAR)
+                END, 'missing'
+            ) as subject_category,
+            COALESCE(
+                CASE
+                    WHEN on_node.category IS NULL THEN 'missing'
+                    WHEN typeof(on_node.category) = 'VARCHAR[]' THEN array_to_string(on_node.category, '|')
+                    ELSE CAST(on_node.category AS VARCHAR)
+                END, 'missing'
+            ) as object_category,
+            COUNT(*) as count
+        FROM {table_name} e
+        LEFT JOIN nodes sn ON e.subject = sn.id
+        LEFT JOIN nodes on_node ON e.object = on_node.id
+        WHERE e.provided_by = ?
+        GROUP BY subject_category, object_category
+        ORDER BY count DESC
+    """, [source]).df()
+
+    return _df_to_category_pairs(node_type_stats)
+
+
+def generate_qc_report_from_database(database_path: str, output_dir: str = ".", output_name: str = "qc_report.yaml") -> None:
+    """
+    Generate QC report from an existing DuckDB database.
+
+    Args:
+        database_path: Path to existing DuckDB database file
+        output_dir: Directory to output the QC report (defaults to current directory)
+        output_name: Name of the QC report file (defaults to "qc_report.yaml")
+
+    Returns:
+        None
+    """
+    import os
+
+    # Ensure output directory exists
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Connect to existing database
+    conn = duckdb.connect(database_path)
+
+    # Generate QC report
+    qc_report_data = create_qc_report_duckdb(conn)
+
+    # Write report to file
+    output_path = os.path.join(output_dir, output_name)
+    with open(output_path, "w") as report_file:
+        yaml.dump(qc_report_data, report_file, default_flow_style=False)
+
+    # Close connection
+    conn.close()
+
+    print(f"QC report generated: {output_path}")

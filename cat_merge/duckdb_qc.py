@@ -742,8 +742,8 @@ def _get_qc_predicates_report(conn: duckdb.DuckDBPyConnection, source: str, tabl
             LEFT JOIN nodes sn ON e.subject = sn.id
             LEFT JOIN nodes on_node ON e.object = on_node.id
             WHERE e.provided_by = ? AND e.predicate = ?
-            GROUP BY subject_category, object_category
-            ORDER BY subject_category, object_category
+            GROUP BY all
+            ORDER BY all
         """, [source, predicate]).df()
 
         predicate_report = {
@@ -782,7 +782,7 @@ def _get_qc_node_types_report(conn: duckdb.DuckDBPyConnection, source: str, tabl
         LEFT JOIN nodes sn ON e.subject = sn.id
         LEFT JOIN nodes on_node ON e.object = on_node.id
         WHERE e.provided_by = ?
-        GROUP BY subject_category, object_category
+        GROUP BY all
         ORDER BY count DESC
     """, [source]).df()
 
